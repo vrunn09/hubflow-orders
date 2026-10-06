@@ -37,7 +37,7 @@ function Settings() {
       }}>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5"><Label>Name</Label><Input value={f.name} onChange={s("name")} /></div>
-          <div className="space-y-1.5"><Label>GSTIN</Label><Input value={f.gstin} onChange={s("gstin")} /></div>
+          <div className="space-y-1.5"><Label>GSTIN (optional)</Label><Input value={f.gstin} onChange={s("gstin")} /></div>
           <div className="space-y-1.5"><Label>Phone</Label><Input value={f.phone} onChange={s("phone")} /></div>
           <div className="space-y-1.5"><Label>Email</Label><Input value={f.email} onChange={s("email")} /></div>
         </div>
