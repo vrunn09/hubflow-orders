@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,7 +37,7 @@ function Notifications() {
             <li key={n.id} className={cn("flex gap-3 px-4 py-3", !n.read && "bg-saffron-soft/40")}>
               <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", n.category === "integration" ? "bg-destructive" : n.read ? "bg-transparent" : "bg-saffron")} />
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">{n.link ? <Link to={n.link} className="hover:underline">{n.title}</Link> : n.title}</div>
+                <div className="text-sm font-medium">{n.link ? <a href={n.link} className="hover:underline">{n.title}</a> : n.title}</div>
                 {n.body && <div className="text-xs text-muted-foreground">{n.body}</div>}
               </div>
               <div className="text-right text-[11px] text-muted-foreground"><div className="uppercase">{n.category}</div>{new Date(n.created_at).toLocaleString("en-IN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" })}</div>
