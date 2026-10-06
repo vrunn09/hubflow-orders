@@ -82,8 +82,14 @@ export const testSourceConnection = createServerFn({ method: "POST" })
     await requireRole(context, data.restaurantId, ["owner", "manager"]);
     const c = getConnector(data.connectorKey);
     try {
-      const sample = c.normalize(c.mockPayload([]));
-      return { ok: true, message: `Normalizer produced a valid order with ${sample.items.length} item(s).` };
+      let sample; let via = "Normalizer";
+      try { sample = c.normalize(c.mockPayload([])); }
+      catch (e) {
+        if (!c.aiFallback) throw e;
+        const { aiNormalizeOrder } = await import("./ai-normalize.server");
+        sample = await aiNormalizeOrder(c.mockPayload([]), c.name); via = "AI reader";
+      }
+      return { ok: true, message: `${via} produced a valid order with ${sample.items.length} item(s).` };
     } catch (e) {
       return { ok: false, message: e instanceof Error ? e.message : "Validation failed" };
     }
