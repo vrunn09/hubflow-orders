@@ -19,6 +19,7 @@ export function useTenantRealtime(restaurantId: string) {
         if (p.eventType === "INSERT") {
           const o = p.new as { order_number: string; customer_name: string };
           toast.success(`New order ${o.order_number}`, { description: o.customer_name });
+          playOrderChime();
         }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter }, () =>
