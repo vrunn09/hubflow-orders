@@ -18,7 +18,9 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedAppDashboardRouteImport } from './routes/_authenticated/_app/dashboard'
+import { Route as AuthenticatedAppOrderSourcesIndexRouteImport } from './routes/_authenticated/_app/order-sources.index'
 import { Route as AuthenticatedAppOrdersIndexRouteImport } from './routes/_authenticated/_app/orders.index'
+import { Route as AuthenticatedAppOrdersIdRouteImport } from './routes/_authenticated/_app/orders.$id'
 import { Route as ApiPublicIngestSourceIdRouteImport } from './routes/api/public/ingest.$sourceId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,10 +67,22 @@ const AuthenticatedAppDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppOrderSourcesIndexRoute =
+  AuthenticatedAppOrderSourcesIndexRouteImport.update({
+    id: '/order-sources/',
+    path: '/order-sources/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppOrdersIndexRoute =
   AuthenticatedAppOrdersIndexRouteImport.update({
     id: '/orders/',
     path: '/orders/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppOrdersIdRoute =
+  AuthenticatedAppOrdersIdRouteImport.update({
+    id: '/orders/$id',
+    path: '/orders/$id',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const ApiPublicIngestSourceIdRoute = ApiPublicIngestSourceIdRouteImport.update({
@@ -85,7 +99,9 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/dashboard': typeof AuthenticatedAppDashboardRoute
+  '/orders/$id': typeof AuthenticatedAppOrdersIdRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
+  '/order-sources/': typeof AuthenticatedAppOrderSourcesIndexRoute
   '/orders/': typeof AuthenticatedAppOrdersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -96,7 +112,9 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/dashboard': typeof AuthenticatedAppDashboardRoute
+  '/orders/$id': typeof AuthenticatedAppOrdersIdRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
+  '/order-sources': typeof AuthenticatedAppOrderSourcesIndexRoute
   '/orders': typeof AuthenticatedAppOrdersIndexRoute
 }
 export interface FileRoutesById {
@@ -110,7 +128,9 @@ export interface FileRoutesById {
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/_app/dashboard': typeof AuthenticatedAppDashboardRoute
+  '/_authenticated/_app/orders/$id': typeof AuthenticatedAppOrdersIdRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
+  '/_authenticated/_app/order-sources/': typeof AuthenticatedAppOrderSourcesIndexRoute
   '/_authenticated/_app/orders/': typeof AuthenticatedAppOrdersIndexRoute
 }
 export interface FileRouteTypes {
@@ -123,7 +143,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/onboarding'
     | '/dashboard'
+    | '/orders/$id'
     | '/api/public/ingest/$sourceId'
+    | '/order-sources/'
     | '/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -134,7 +156,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/onboarding'
     | '/dashboard'
+    | '/orders/$id'
     | '/api/public/ingest/$sourceId'
+    | '/order-sources'
     | '/orders'
   id:
     | '__root__'
@@ -147,7 +171,9 @@ export interface FileRouteTypes {
     | '/_authenticated/_app'
     | '/_authenticated/onboarding'
     | '/_authenticated/_app/dashboard'
+    | '/_authenticated/_app/orders/$id'
     | '/api/public/ingest/$sourceId'
+    | '/_authenticated/_app/order-sources/'
     | '/_authenticated/_app/orders/'
   fileRoutesById: FileRoutesById
 }
@@ -226,11 +252,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDashboardRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/order-sources/': {
+      id: '/_authenticated/_app/order-sources/'
+      path: '/order-sources'
+      fullPath: '/order-sources/'
+      preLoaderRoute: typeof AuthenticatedAppOrderSourcesIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/orders/': {
       id: '/_authenticated/_app/orders/'
       path: '/orders'
       fullPath: '/orders/'
       preLoaderRoute: typeof AuthenticatedAppOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/orders/$id': {
+      id: '/_authenticated/_app/orders/$id'
+      path: '/orders/$id'
+      fullPath: '/orders/$id'
+      preLoaderRoute: typeof AuthenticatedAppOrdersIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/api/public/ingest/$sourceId': {
@@ -245,11 +285,16 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDashboardRoute: typeof AuthenticatedAppDashboardRoute
+  AuthenticatedAppOrdersIdRoute: typeof AuthenticatedAppOrdersIdRoute
+  AuthenticatedAppOrderSourcesIndexRoute: typeof AuthenticatedAppOrderSourcesIndexRoute
   AuthenticatedAppOrdersIndexRoute: typeof AuthenticatedAppOrdersIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDashboardRoute: AuthenticatedAppDashboardRoute,
+  AuthenticatedAppOrdersIdRoute: AuthenticatedAppOrdersIdRoute,
+  AuthenticatedAppOrderSourcesIndexRoute:
+    AuthenticatedAppOrderSourcesIndexRoute,
   AuthenticatedAppOrdersIndexRoute: AuthenticatedAppOrdersIndexRoute,
 }
 
