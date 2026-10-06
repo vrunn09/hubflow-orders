@@ -54,7 +54,7 @@ function OrderDetail() {
   if (!o) return <ErrorState error={new Error("Order not found or you don't have access.")} />;
   const status = o.status as OrderStatus;
   const next = ALLOWED[status].filter((s) => s !== "REFUNDED" && s !== "ASSIGNED" && STATUS_ROLES[s].includes(role));
-  const delivery = o.deliveries?.[0] ?? (o.deliveries as unknown as { partner_id: string; delivery_partners: { name: string } } | null);
+  const delivery = (Array.isArray(o.deliveries) ? o.deliveries[0] : o.deliveries) as { delivery_partners: { name: string } | null } | null | undefined;
   const history = [...(o.order_status_history ?? [])].sort((a, b) => a.created_at.localeCompare(b.created_at));
   const fin = can("owner", "manager");
 

@@ -63,7 +63,7 @@ export const connectSource = createServerFn({ method: "POST" })
       const bytes = crypto.getRandomValues(new Uint8Array(32));
       webhookSecret = "whsec_" + [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
       const { sha256Hex } = await import("./ingest.server");
-      config.webhook_secret_hash = await sha256Hex(webhookSecret); // only the hash is stored
+      config["webhook_secret_hash"] = await sha256Hex(webhookSecret); // only the hash is stored
     }
     const { data: src, error } = await a.from("order_sources").upsert({
       restaurant_id: data.restaurantId, connector_key: connector.key, display_name: data.displayName,
@@ -288,14 +288,13 @@ export const runSettlement = createServerFn({ method: "POST" })
     const by: Record<string, { gross: number; discounts: number; refunds: number }> = {};
     for (const o of orders ?? []) {
       if (["CANCELLED", "FAILED"].includes(o.status)) continue;
-      by[o.source_key] ??= { gross: 0, discounts: 0, refunds: 0 };
-      by[o.source_key].gross += Number(o.subtotal);
-      by[o.source_key].discounts += Number(o.discount);
+      const b = (by[o.source_key] ??= { gross: 0, discounts: 0, refunds: 0 });
+      b.gross += Number(o.subtotal);
+      b.discounts += Number(o.discount);
     }
     for (const r of refunds ?? []) {
       const k = (r.orders as { source_key: string } | null)?.source_key ?? "manual";
-      by[k] ??= { gross: 0, discounts: 0, refunds: 0 };
-      by[k].refunds += Number(r.amount);
+      (by[k] ??= { gross: 0, discounts: 0, refunds: 0 }).refunds += Number(r.amount);
     }
     const rows = Object.entries(by).map(([k, v]) => {
       const commission = Math.round(v.gross * (COMMISSION[k] ?? 0.1));

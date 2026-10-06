@@ -31,9 +31,9 @@ function Partners() {
       <PageHeader title="Delivery partners" description="Availability is used when assigning orders." />
       <form className="surface mb-4 flex flex-wrap gap-2 p-3" onSubmit={async (e) => {
         e.preventDefault();
-        if (f.name.trim().length < 2) return toast.error("Enter a name");
+        if (f.name.trim().length < 2) { toast.error("Enter a name"); return; }
         const { error } = await supabase.from("delivery_partners").insert({ restaurant_id: restaurantId, name: f.name.trim(), phone: f.phone || null, station: f.station || null });
-        if (error) return toast.error(error.message);
+        if (error) { toast.error(error.message); return; }
         setF({ name: "", phone: "", station: "" }); toast.success("Partner added"); refresh();
       }}>
         <Input className="w-44" placeholder="Name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />

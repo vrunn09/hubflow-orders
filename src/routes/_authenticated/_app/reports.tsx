@@ -38,7 +38,7 @@ function Reports() {
       } else if (k === "platform") {
         const { data } = await supabase.from("orders").select("source_key,total,status").eq("restaurant_id", restaurantId).gte("created_at", since(30));
         const m: Record<string, { platform: string; orders: number; revenue: number; cancelled: number }> = {};
-        for (const o of data ?? []) { m[o.source_key] ??= { platform: o.source_key, orders: 0, revenue: 0, cancelled: 0 }; m[o.source_key].orders++; if (o.status === "CANCELLED") m[o.source_key].cancelled++; else m[o.source_key].revenue += Number(o.total); }
+        for (const o of data ?? []) { const x = (m[o.source_key] ??= { platform: o.source_key, orders: 0, revenue: 0, cancelled: 0 }); x.orders++; if (o.status === "CANCELLED") x.cancelled++; else x.revenue += Number(o.total); }
         rows = Object.values(m);
       } else if (k === "payment") {
         const { data } = await supabase.from("payments").select("method,mode,amount,status,provider_ref,verified_at,created_at,orders(order_number)").eq("restaurant_id", restaurantId).gte("created_at", since(30));

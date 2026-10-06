@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/_app/analytics")({
   head: () => ({ meta: [{ title: "Analytics — RailFeasto Order Hub" }, { name: "description", content: "Sales, orders and platform performance." }, { property: "og:title", content: "Analytics" }, { property: "og:description", content: "Sales, orders and platform performance." }] }),
   component: () => <RoleGuard roles={["owner", "manager"]}><Analytics /></RoleGuard>,
 });
-const name = (k: string) => CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0].split(" /")[0] ?? k;
+const name = (k: string) => CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0]?.split(" /")[0] ?? k;
 
 function Analytics() {
   const { restaurantId } = useTenant();

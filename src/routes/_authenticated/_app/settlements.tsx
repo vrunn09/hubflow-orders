@@ -46,7 +46,7 @@ function Settlements() {
         <div className="surface overflow-x-auto"><table className="w-full text-sm">
           <thead className="border-b bg-muted/50 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">{view === "platform" ? "Platform" : "Period"}</th>{["Gross", "Discounts", "Commission", "Refunds", "Net"].map((h) => <th key={h} className="px-3 py-2 text-right">{h}</th>)}</tr></thead>
           <tbody className="divide-y">{grouped.map((g) => { const s = (k: "gross" | "discounts" | "commission" | "refunds" | "net") => g.reduce((a, r) => a + Number(r[k]), 0); return (
-            <tr key={view === "platform" ? g[0].source_key : g[0].period_start + g[0].period_end}><td className="px-3 py-2">{view === "platform" ? <SourceTag k={g[0].source_key} /> : `${g[0].period_start} → ${g[0].period_end}`}</td>
+            <tr key={view === "platform" ? g[0]!.source_key : g[0]!.period_start + g[0]!.period_end}><td className="px-3 py-2">{view === "platform" ? <SourceTag k={g[0]!.source_key} /> : `${g[0]!.period_start} → ${g[0]!.period_end}`}</td>
               {(["gross", "discounts", "commission", "refunds", "net"] as const).map((k) => <td key={k} className={cn("tabular px-3 py-2 text-right", k === "net" && "font-bold")}>{formatINR(s(k))}</td>)}</tr>); })}</tbody>
         </table></div>
       )}

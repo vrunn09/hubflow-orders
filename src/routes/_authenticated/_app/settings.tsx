@@ -30,9 +30,9 @@ function Settings() {
       <PageHeader title="Restaurant settings" />
       <form className="surface space-y-3 p-5" onSubmit={async (e) => {
         e.preventDefault();
-        if (f.name.trim().length < 2) return toast.error("Name is required");
+        if (f.name.trim().length < 2) { toast.error("Name is required"); return; }
         const { error } = await supabase.from("restaurants").update({ ...f, gstin: f.gstin.toUpperCase(), stations: f.stations.split(",").map((x) => x.trim()).filter(Boolean), updated_at: new Date().toISOString() }).eq("id", restaurantId);
-        if (error) return toast.error(error.message);
+        if (error) { toast.error(error.message); return; }
         toast.success("Settings saved"); qc.invalidateQueries({ queryKey: ["memberships"] });
       }}>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -48,7 +48,7 @@ function Settings() {
       </form>
       <div className="surface mt-4 p-5 text-sm">
         <h2 className="font-semibold">Settlement account</h2>
-        <p className="mt-1 text-muted-foreground">{bank.account_name || "Not set"} · ••••{bank.account_last4 || "----"} · {bank.ifsc || "IFSC not set"}{bank.upi && ` · ${bank.upi}`}</p>
+        <p className="mt-1 text-muted-foreground">{bank["account_name"] || "Not set"} · ••••{bank["account_last4"] || "----"} · {bank["ifsc"] || "IFSC not set"}{bank["upi"] && ` · ${bank["upi"]}`}</p>
       </div>
     </div>
   );

@@ -53,7 +53,7 @@ function Sources() {
                     <div className="min-w-0 flex-1"><div className="truncate font-semibold">{s.display_name}</div><div className="text-xs text-muted-foreground">{c?.name}</div></div>
                     <EnvTag env={s.environment} />
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2"><Pill value={isSync ? "syncing" : s.status} label={isSync ? "Syncing…" : s.status === "connected" ? "Connected" : s.status === "not_connected" ? "Not connected" : undefined} />
+                  <div className="mt-3 flex flex-wrap gap-2"><Pill value={isSync ? "syncing" : s.status} label={isSync ? "Syncing…" : s.status === "connected" ? "Connected" : s.status === "not_connected" ? "Not connected" : s.status} />
                     <span className={`text-xs font-medium ${s.health === "healthy" ? "text-success" : s.health === "degraded" ? "text-warning" : s.health === "down" ? "text-destructive" : "text-muted-foreground"}`}>Health: {s.health}</span></div>
                   <dl className="mt-3 grid grid-cols-2 gap-y-1 text-xs">
                     <dt className="text-muted-foreground">Last sync</dt><dd className="text-right">{s.last_sync_at ? new Date(s.last_sync_at).toLocaleString("en-IN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" }) : "Never"}</dd>

@@ -25,7 +25,7 @@ function Profile() {
       <PageHeader title="Profile" description={`${user.email} · ${role}`} />
       <form className="surface space-y-3 p-5" onSubmit={async (e) => {
         e.preventDefault();
-        const { error } = await supabase.from("profiles").upsert({ id: user.id, email: user.email, ...f });
+        const { error } = await supabase.from("profiles").upsert({ id: user.id, email: user.email ?? null, ...f });
         error ? toast.error(error.message) : toast.success("Profile saved");
       }}>
         <div className="space-y-1.5"><Label>Full name</Label><Input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} /></div>
@@ -34,7 +34,7 @@ function Profile() {
       </form>
       <form className="surface space-y-3 p-5" onSubmit={async (e) => {
         e.preventDefault();
-        if (pw.length < 8) return toast.error("Use at least 8 characters");
+        if (pw.length < 8) { toast.error("Use at least 8 characters"); return; }
         const { error } = await supabase.auth.updateUser({ password: pw });
         if (error) toast.error(error.message); else { toast.success("Password changed"); setPw(""); }
       }}>
