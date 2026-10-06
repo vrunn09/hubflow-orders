@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -38,9 +38,9 @@ function Login() {
   const [err, setErr] = useState<string | null>(null);
 
   // Already signed in (e.g. returning from Google) → go to app.
-  useState(() => {
-    if (typeof window !== "undefined") supabase.auth.getSession().then(({ data }) => data.session && nav({ to: "/dashboard" }));
-  });
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => data.session && nav({ to: "/dashboard" }));
+  }, [nav]);
 
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to manage today's orders."
