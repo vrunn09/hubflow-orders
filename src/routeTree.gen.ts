@@ -21,11 +21,15 @@ import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppDashboardRouteImport } from './routes/_authenticated/_app/dashboard'
 import { Route as AuthenticatedAppDeliveryRouteImport } from './routes/_authenticated/_app/delivery'
 import { Route as AuthenticatedAppDeliveryPartnersRouteImport } from './routes/_authenticated/_app/delivery-partners'
+import { Route as AuthenticatedAppHelpRouteImport } from './routes/_authenticated/_app/help'
 import { Route as AuthenticatedAppKitchenRouteImport } from './routes/_authenticated/_app/kitchen'
 import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/_app/notifications'
 import { Route as AuthenticatedAppPaymentsRouteImport } from './routes/_authenticated/_app/payments'
+import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/_app/profile'
 import { Route as AuthenticatedAppReportsRouteImport } from './routes/_authenticated/_app/reports'
+import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/_app/settings'
 import { Route as AuthenticatedAppSettlementsRouteImport } from './routes/_authenticated/_app/settlements'
+import { Route as AuthenticatedAppStaffRouteImport } from './routes/_authenticated/_app/staff'
 import { Route as AuthenticatedAppOrderSourcesIndexRouteImport } from './routes/_authenticated/_app/order-sources.index'
 import { Route as AuthenticatedAppOrderSourcesConnectRouteImport } from './routes/_authenticated/_app/order-sources.connect'
 import { Route as AuthenticatedAppOrdersIndexRouteImport } from './routes/_authenticated/_app/orders.index'
@@ -94,6 +98,11 @@ const AuthenticatedAppDeliveryPartnersRoute =
     path: '/delivery-partners',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppHelpRoute = AuthenticatedAppHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppKitchenRoute = AuthenticatedAppKitchenRouteImport.update({
   id: '/kitchen',
   path: '/kitchen',
@@ -111,17 +120,33 @@ const AuthenticatedAppPaymentsRoute =
     path: '/payments',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppProfileRoute = AuthenticatedAppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppReportsRoute = AuthenticatedAppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppSettingsRoute =
+  AuthenticatedAppSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppSettlementsRoute =
   AuthenticatedAppSettlementsRouteImport.update({
     id: '/settlements',
     path: '/settlements',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppStaffRoute = AuthenticatedAppStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppOrderSourcesIndexRoute =
   AuthenticatedAppOrderSourcesIndexRouteImport.update({
     id: '/order-sources/',
@@ -163,11 +188,15 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedAppDashboardRoute
   '/delivery': typeof AuthenticatedAppDeliveryRoute
   '/delivery-partners': typeof AuthenticatedAppDeliveryPartnersRoute
+  '/help': typeof AuthenticatedAppHelpRoute
   '/kitchen': typeof AuthenticatedAppKitchenRoute
   '/notifications': typeof AuthenticatedAppNotificationsRoute
   '/payments': typeof AuthenticatedAppPaymentsRoute
+  '/profile': typeof AuthenticatedAppProfileRoute
   '/reports': typeof AuthenticatedAppReportsRoute
+  '/settings': typeof AuthenticatedAppSettingsRoute
   '/settlements': typeof AuthenticatedAppSettlementsRoute
+  '/staff': typeof AuthenticatedAppStaffRoute
   '/order-sources/connect': typeof AuthenticatedAppOrderSourcesConnectRoute
   '/orders/$id': typeof AuthenticatedAppOrdersIdRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
@@ -185,11 +214,15 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedAppDashboardRoute
   '/delivery': typeof AuthenticatedAppDeliveryRoute
   '/delivery-partners': typeof AuthenticatedAppDeliveryPartnersRoute
+  '/help': typeof AuthenticatedAppHelpRoute
   '/kitchen': typeof AuthenticatedAppKitchenRoute
   '/notifications': typeof AuthenticatedAppNotificationsRoute
   '/payments': typeof AuthenticatedAppPaymentsRoute
+  '/profile': typeof AuthenticatedAppProfileRoute
   '/reports': typeof AuthenticatedAppReportsRoute
+  '/settings': typeof AuthenticatedAppSettingsRoute
   '/settlements': typeof AuthenticatedAppSettlementsRoute
+  '/staff': typeof AuthenticatedAppStaffRoute
   '/order-sources/connect': typeof AuthenticatedAppOrderSourcesConnectRoute
   '/orders/$id': typeof AuthenticatedAppOrdersIdRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
@@ -210,11 +243,15 @@ export interface FileRoutesById {
   '/_authenticated/_app/dashboard': typeof AuthenticatedAppDashboardRoute
   '/_authenticated/_app/delivery': typeof AuthenticatedAppDeliveryRoute
   '/_authenticated/_app/delivery-partners': typeof AuthenticatedAppDeliveryPartnersRoute
+  '/_authenticated/_app/help': typeof AuthenticatedAppHelpRoute
   '/_authenticated/_app/kitchen': typeof AuthenticatedAppKitchenRoute
   '/_authenticated/_app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/_authenticated/_app/payments': typeof AuthenticatedAppPaymentsRoute
+  '/_authenticated/_app/profile': typeof AuthenticatedAppProfileRoute
   '/_authenticated/_app/reports': typeof AuthenticatedAppReportsRoute
+  '/_authenticated/_app/settings': typeof AuthenticatedAppSettingsRoute
   '/_authenticated/_app/settlements': typeof AuthenticatedAppSettlementsRoute
+  '/_authenticated/_app/staff': typeof AuthenticatedAppStaffRoute
   '/_authenticated/_app/order-sources/connect': typeof AuthenticatedAppOrderSourcesConnectRoute
   '/_authenticated/_app/orders/$id': typeof AuthenticatedAppOrdersIdRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
@@ -234,11 +271,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/delivery'
     | '/delivery-partners'
+    | '/help'
     | '/kitchen'
     | '/notifications'
     | '/payments'
+    | '/profile'
     | '/reports'
+    | '/settings'
     | '/settlements'
+    | '/staff'
     | '/order-sources/connect'
     | '/orders/$id'
     | '/api/public/ingest/$sourceId'
@@ -256,11 +297,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/delivery'
     | '/delivery-partners'
+    | '/help'
     | '/kitchen'
     | '/notifications'
     | '/payments'
+    | '/profile'
     | '/reports'
+    | '/settings'
     | '/settlements'
+    | '/staff'
     | '/order-sources/connect'
     | '/orders/$id'
     | '/api/public/ingest/$sourceId'
@@ -280,11 +325,15 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/dashboard'
     | '/_authenticated/_app/delivery'
     | '/_authenticated/_app/delivery-partners'
+    | '/_authenticated/_app/help'
     | '/_authenticated/_app/kitchen'
     | '/_authenticated/_app/notifications'
     | '/_authenticated/_app/payments'
+    | '/_authenticated/_app/profile'
     | '/_authenticated/_app/reports'
+    | '/_authenticated/_app/settings'
     | '/_authenticated/_app/settlements'
+    | '/_authenticated/_app/staff'
     | '/_authenticated/_app/order-sources/connect'
     | '/_authenticated/_app/orders/$id'
     | '/api/public/ingest/$sourceId'
@@ -388,6 +437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDeliveryPartnersRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/help': {
+      id: '/_authenticated/_app/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedAppHelpRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/kitchen': {
       id: '/_authenticated/_app/kitchen'
       path: '/kitchen'
@@ -409,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppPaymentsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/profile': {
+      id: '/_authenticated/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedAppProfileRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/reports': {
       id: '/_authenticated/_app/reports'
       path: '/reports'
@@ -416,11 +479,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppReportsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/settings': {
+      id: '/_authenticated/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedAppSettingsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/settlements': {
       id: '/_authenticated/_app/settlements'
       path: '/settlements'
       fullPath: '/settlements'
       preLoaderRoute: typeof AuthenticatedAppSettlementsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/staff': {
+      id: '/_authenticated/_app/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof AuthenticatedAppStaffRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/order-sources/': {
@@ -466,11 +543,15 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDashboardRoute: typeof AuthenticatedAppDashboardRoute
   AuthenticatedAppDeliveryRoute: typeof AuthenticatedAppDeliveryRoute
   AuthenticatedAppDeliveryPartnersRoute: typeof AuthenticatedAppDeliveryPartnersRoute
+  AuthenticatedAppHelpRoute: typeof AuthenticatedAppHelpRoute
   AuthenticatedAppKitchenRoute: typeof AuthenticatedAppKitchenRoute
   AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
   AuthenticatedAppPaymentsRoute: typeof AuthenticatedAppPaymentsRoute
+  AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
   AuthenticatedAppReportsRoute: typeof AuthenticatedAppReportsRoute
+  AuthenticatedAppSettingsRoute: typeof AuthenticatedAppSettingsRoute
   AuthenticatedAppSettlementsRoute: typeof AuthenticatedAppSettlementsRoute
+  AuthenticatedAppStaffRoute: typeof AuthenticatedAppStaffRoute
   AuthenticatedAppOrderSourcesConnectRoute: typeof AuthenticatedAppOrderSourcesConnectRoute
   AuthenticatedAppOrdersIdRoute: typeof AuthenticatedAppOrdersIdRoute
   AuthenticatedAppOrderSourcesIndexRoute: typeof AuthenticatedAppOrderSourcesIndexRoute
@@ -482,11 +563,15 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDashboardRoute: AuthenticatedAppDashboardRoute,
   AuthenticatedAppDeliveryRoute: AuthenticatedAppDeliveryRoute,
   AuthenticatedAppDeliveryPartnersRoute: AuthenticatedAppDeliveryPartnersRoute,
+  AuthenticatedAppHelpRoute: AuthenticatedAppHelpRoute,
   AuthenticatedAppKitchenRoute: AuthenticatedAppKitchenRoute,
   AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
   AuthenticatedAppPaymentsRoute: AuthenticatedAppPaymentsRoute,
+  AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
   AuthenticatedAppReportsRoute: AuthenticatedAppReportsRoute,
+  AuthenticatedAppSettingsRoute: AuthenticatedAppSettingsRoute,
   AuthenticatedAppSettlementsRoute: AuthenticatedAppSettlementsRoute,
+  AuthenticatedAppStaffRoute: AuthenticatedAppStaffRoute,
   AuthenticatedAppOrderSourcesConnectRoute:
     AuthenticatedAppOrderSourcesConnectRoute,
   AuthenticatedAppOrdersIdRoute: AuthenticatedAppOrdersIdRoute,
