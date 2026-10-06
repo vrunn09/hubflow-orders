@@ -37,7 +37,7 @@ const SCHEMA = {
 };
 
 export async function aiNormalizeOrder(raw: unknown, platformName: string): Promise<UnifiedOrder> {
-  const key = process.env.LOVABLE_API_KEY;
+  const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI processing is not configured");
   const text = typeof raw === "string" ? raw : JSON.stringify(raw);
   const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {

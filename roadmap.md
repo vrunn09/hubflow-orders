@@ -7,5 +7,6 @@
 - [ ] Live Zomato / Swiggy / IRCTC — blocked: needs official partner API access from each platform
 - [ ] Online payment gateway verification — blocked: needs a payment provider choice
 - [x] Background retries (auto every 5 min, on new webhooks, on Sync Now) + nightly cleanup
+- [x] Platform search, AI order reader (any format → unified order), AI fallback for all connectors
 - [ ] Commission rates — on hold by owner
 - [ ] Platform admin account — blocked: needs the admin email
