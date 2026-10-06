@@ -19,6 +19,7 @@ export function useTenantRealtime(restaurantId: string) {
         if (p.eventType === "INSERT") {
           const o = p.new as { order_number: string; customer_name: string };
           toast.success(`New order ${o.order_number}`, { description: o.customer_name });
+          playOrderChime();
         }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter }, () =>
@@ -31,4 +32,20 @@ export function useTenantRealtime(restaurantId: string) {
     return () => { window.removeEventListener("offline", off); supabase.removeChannel(channel); };
   }, [restaurantId, qc]);
   return state;
+}
+
+/** Short two-tone bell for new orders (no audio file needed). Browsers allow it after the user has clicked once. */
+function playOrderChime() {
+  try {
+    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AC();
+    [880, 1320, 880, 1320].forEach((f, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = f; o.type = "sine";
+      const t = ctx.currentTime + i * 0.25;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.24);
+    });
+    setTimeout(() => ctx.close(), 1500);
+  } catch { /* sound not available */ }
 }
