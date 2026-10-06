@@ -42,7 +42,7 @@ function Signup() {
       <form className="space-y-4" onSubmit={async (e) => {
         e.preventDefault(); setErr(null);
         const p = schema.safeParse(f);
-        if (!p.success) return setErr(p.error.issues[0].message);
+        if (!p.success) return setErr(p.error.issues[0]?.message ?? "Invalid input");
         setBusy(true);
         const { error } = await supabase.auth.signUp({
           email: p.data.email, password: p.data.password,

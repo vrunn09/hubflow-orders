@@ -13,7 +13,7 @@ const MENU = [
 ] as const;
 const DEFAULT_STATIONS = ["Bhopal Jn (BPL)", "Nagpur (NGP)", "Itarsi Jn (ET)", "Jhansi Jn (VGLJ)"];
 
-const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
+const pick = <T,>(a: readonly T[]): T => a[Math.floor(Math.random() * a.length)] as T;
 const rint = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 export function mockRailOrder(stations: string[]) {

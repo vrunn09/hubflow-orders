@@ -31,7 +31,7 @@ function Onboarding() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [f, setF] = useState({
-    name: "", logo_url: "", owner_name: (user.user_metadata?.full_name as string) ?? "", phone: "", email: user.email ?? "", address: "", gstin: "",
+    name: "", logo_url: "", owner_name: (user.user_metadata?.["full_name"] as string) ?? "", phone: "", email: user.email ?? "", address: "", gstin: "",
     open: "07:00", close: "23:00", days: "Mon–Sun",
     acct_name: "", acct_last4: "", ifsc: "", upi: "",
     stations: "",
@@ -41,7 +41,7 @@ function Onboarding() {
   const validate = () => {
     if (step === 0) {
       const r = z.object({ name: z.string().min(2, "Restaurant name is required"), phone: z.string().regex(/^[0-9+\-\s]{10,15}$/, "Enter a valid phone"), email: z.string().email("Enter a valid email") }).safeParse(f);
-      if (!r.success) return r.error.issues[0].message;
+      if (!r.success) return r.error.issues[0]?.message ?? "Invalid input";
       if (f.gstin && !gstRe.test(f.gstin.toUpperCase())) return "GSTIN format looks invalid";
       if (f.logo_url && !/^https:\/\//.test(f.logo_url)) return "Logo must be an https:// image URL";
     }

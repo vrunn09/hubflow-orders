@@ -31,7 +31,7 @@ export function Pill({ value, label, className }: { value: string; label?: strin
 }
 
 export function SourceTag({ k }: { k: string }) {
-  const name = CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0].split(" /")[0] ?? k;
+  const name = CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0]?.split(" /")[0] ?? k;
   return <span className="inline-flex items-center rounded bg-secondary px-1.5 py-0.5 text-[11px] font-medium text-secondary-foreground">{name}</span>;
 }
 

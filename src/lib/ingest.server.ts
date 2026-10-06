@@ -28,7 +28,7 @@ export async function ingestOrder(
   const finish = (status: "done" | "failed" | "duplicate", last_error?: string) =>
     admin.from("ingestion_jobs").update({
       status, last_error: last_error ?? null, updated_at: new Date().toISOString(),
-      next_attempt_at: status === "failed" ? new Date(Date.now() + 60_000).toISOString() : undefined,
+      ...(status === "failed" ? { next_attempt_at: new Date(Date.now() + 60_000).toISOString() } : {}),
     }).eq("id", job.id);
 
   try {

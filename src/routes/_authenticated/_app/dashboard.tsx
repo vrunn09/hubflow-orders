@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/_app/dashboard")({
 });
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
-const srcName = (k: string) => CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0].split(" /")[0] ?? k;
+const srcName = (k: string) => CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0]?.split(" /")[0] ?? k;
 
 function Dashboard() {
   const { restaurantId } = useTenant();
