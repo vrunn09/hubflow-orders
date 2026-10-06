@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Pause, Play, Plus, RefreshCw, Unplug } from "lucide-react";
+import { KeyRound, Pause, Play, Plus, RefreshCw, Unplug } from "lucide-react";
+import { CredentialsDialog } from "@/components/app/CredentialsDialog";
 import { useTenant } from "@/lib/tenant";
 import { useSources } from "@/lib/queries";
 import { sourceAction, syncSource } from "@/lib/api.functions";
@@ -27,6 +28,7 @@ function Sources() {
   const act = useServerFn(sourceAction);
   const [busy, setBusy] = useState<string | null>(null);
   const [disc, setDisc] = useState<string | null>(null);
+  const [cred, setCred] = useState<{ id: string; name: string } | null>(null);
 
   const run = async (id: string, fn: () => Promise<unknown>, msg: (r: unknown) => string) => {
     setBusy(id);
@@ -68,6 +70,7 @@ function Sources() {
                     {s.status === "paused" && <Button size="sm" variant="outline" onClick={() => run(s.id, () => act({ data: { sourceId: s.id, action: "resume" } }), () => "Source resumed")}><Play />Resume</Button>}
                     {s.status === "error" && <Button size="sm" variant="saffron" onClick={() => run(s.id, () => act({ data: { sourceId: s.id, action: "reconnect" } }), () => "Reconnected")}>Reconnect</Button>}
                     {s.status === "not_connected" && <Button size="sm" variant="saffron" asChild><Link to="/order-sources/connect" search={{ connector: s.connector_key }}>Connect</Link></Button>}
+                    {s.connector_key !== "manual" && s.status !== "not_connected" && <Button size="sm" variant="outline" onClick={() => setCred({ id: s.id, name: s.display_name })}><KeyRound />Change password</Button>}
                     {s.connector_key !== "manual" && s.status !== "not_connected" && can("owner") && <Button size="sm" variant="ghost" className="ml-auto text-destructive" onClick={() => setDisc(s.id)}><Unplug />Disconnect</Button>}
                   </div>
                 </div>
@@ -85,6 +88,7 @@ function Sources() {
           </div>
         </>
       )}
+      {cred && <CredentialsDialog sourceId={cred.id} name={cred.name} open onOpenChange={(v) => !v && setCred(null)} onSaved={() => qc.invalidateQueries({ queryKey: ["sources"] })} />}
       <AlertDialog open={!!disc} onOpenChange={(v) => !v && setDisc(null)}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Disconnect this source?</AlertDialogTitle><AlertDialogDescription>New orders from it will stop arriving and its stored credentials are deleted. Existing orders stay.</AlertDialogDescription></AlertDialogHeader>

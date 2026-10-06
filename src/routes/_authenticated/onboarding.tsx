@@ -86,7 +86,7 @@ function Onboarding() {
               <F l="Owner name"><Input value={f.owner_name} onChange={set("owner_name")} /></F>
               <F l="Phone *"><Input value={f.phone} onChange={set("phone")} inputMode="tel" /></F>
               <F l="Business email *"><Input value={f.email} onChange={set("email")} type="email" /></F>
-              <F l="GSTIN"><Input value={f.gstin} onChange={set("gstin")} placeholder="22AAAAA0000A1Z5" /></F>
+              <F l="GSTIN (optional)"><Input value={f.gstin} onChange={set("gstin")} placeholder="Leave blank if not registered" /></F>
             </div>
             <F l="Address"><Textarea value={f.address} onChange={set("address")} rows={2} /></F>
             <F l="Logo URL"><Input value={f.logo_url} onChange={set("logo_url")} placeholder="https://…" /></F>

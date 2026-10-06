@@ -114,6 +114,39 @@ export const sourceAction = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Saves or rotates a source's login (e.g. monthly IRCTC password change). Encrypted server-side; never returned to the browser. */
+export const updateSourceCredentials = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    sourceId: uuid,
+    account: z.string().trim().min(3).max(160),
+    password: z.string().min(4).max(200),
+    otp: z.string().trim().max(12).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const a = await admin();
+    const { data: src } = await a.from("order_sources").select("id,restaurant_id,connector_key").eq("id", data.sourceId).single();
+    if (!src) throw new Error("Source not found");
+    await requireRole(context, src.restaurant_id, ["owner", "manager"]);
+    if (src.connector_key === "manual") throw new Error("Manual orders don't need a login");
+    const keyHex = process.env["CREDENTIALS_ENCRYPTION_KEY"];
+    if (!keyHex) throw new Error("Encryption key missing on server");
+    const raw = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(keyHex));
+    const key = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt"]);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const plain = new TextEncoder().encode(JSON.stringify({ account: data.account, password: data.password, otp: data.otp || null, saved_at: new Date().toISOString() }));
+    const enc = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plain));
+    const b64 = (u: Uint8Array) => btoa(String.fromCharCode(...u));
+    const ciphertext = `v1:${b64(iv)}:${b64(enc)}`;
+    await a.from("integration_credentials").delete().eq("source_id", src.id);
+    const { error } = await a.from("integration_credentials").insert({ source_id: src.id, ciphertext, updated_at: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    const masked = data.account.includes("@") ? data.account.replace(/^(.{2}).*(@.*)$/, "$1•••$2") : data.account.slice(0, 2) + "•••";
+    await a.from("order_sources").update({ connected_account: masked, last_error: null }).eq("id", src.id);
+    await audit(src.restaurant_id, context.userId, "source.credentials_updated", "order_source", src.id);
+    return { ok: true, account: masked };
+  });
+
 export const syncSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ sourceId: uuid }).parse(d))
