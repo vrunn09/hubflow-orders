@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/public/ingest/$sourceId")({
         if (!token) return json({ error: "Unauthorized" }, 401);
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { ingestOrder, sha256Hex } = await import("@/lib/ingest.server");
+        const { ingestOrder, sha256Hex, retryDueJobs } = await import("@/lib/ingest.server");
         const { data: src } = await supabaseAdmin.from("order_sources").select("*").eq("id", params.sourceId).maybeSingle();
         const expected = (src?.config as { webhook_secret_hash?: string } | null)?.webhook_secret_hash;
         if (!src || !expected || (await sha256Hex(token)) !== expected) return json({ error: "Unauthorized" }, 401);
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/api/public/ingest/$sourceId")({
         try { raw = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
         const result = await ingestOrder(supabaseAdmin, { restaurantId: src.restaurant_id, sourceId: src.id, connectorKey: src.connector_key, raw });
         await supabaseAdmin.from("order_sources").update({ last_sync_at: new Date().toISOString() }).eq("id", src.id);
+        await retryDueJobs(supabaseAdmin, src.restaurant_id).catch(() => {});
         if (result.status === "failed") return json({ status: "queued_for_retry", error: "Validation failed" }, 422);
         return json(result, result.status === "created" ? 201 : 200);
       },

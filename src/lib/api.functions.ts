@@ -272,7 +272,6 @@ export const refundOrder = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-const COMMISSION: Record<string, number> = { zomato: 0.22, swiggy: 0.2, irctc: 0.15, railfeasto: 0.12, gmail: 0, webhook: 0.1, manual: 0 };
 
 export const runSettlement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -297,7 +296,7 @@ export const runSettlement = createServerFn({ method: "POST" })
       (by[k] ??= { gross: 0, discounts: 0, refunds: 0 }).refunds += Number(r.amount);
     }
     const rows = Object.entries(by).map(([k, v]) => {
-      const commission = Math.round(v.gross * (COMMISSION[k] ?? 0.1));
+      const commission = 0; // Commission rates not configured yet
       return {
         restaurant_id: data.restaurantId, source_key: k, period_start: start.toISOString().slice(0, 10), period_end: end.toISOString().slice(0, 10),
         gross: v.gross, discounts: v.discounts, commission, refunds: v.refunds, adjustments: 0, net: v.gross - v.discounts - commission - v.refunds, status: "COMPUTED",
@@ -371,4 +370,16 @@ export const adminOverview = createServerFn({ method: "GET" })
       sources: sources.data ?? [], audits: audits.data ?? [],
       jobs: (jobs.data ?? []).reduce<Record<string, number>>((m, j) => ((m[j.status] = (m[j.status] ?? 0) + 1), m), {}),
     };
+  });
+
+/* ---------------- Background retries ---------------- */
+
+export const retryFailedJobs = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ restaurantId: uuid }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireRole(context, data.restaurantId, ["owner", "manager"]);
+    const a = await admin();
+    const { retryDueJobs } = await import("./ingest.server");
+    return retryDueJobs(a, data.restaurantId);
   });

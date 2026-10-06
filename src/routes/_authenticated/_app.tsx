@@ -7,7 +7,7 @@ import {
   Receipt, Settings, Shield, Truck, User, Users, Wallet,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { claimInvites } from "@/lib/api.functions";
+import { claimInvites, retryFailedJobs } from "@/lib/api.functions";
 import { TenantProvider, useMemberships, useTenant, type Role } from "@/lib/tenant";
 import { useTenantRealtime } from "@/lib/realtime";
 import { Logo } from "@/components/app/Logo";
@@ -96,6 +96,17 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 function Shell() {
   const { current, memberships, setCurrent, restaurantId, role, user } = useTenant();
   const live = useTenantRealtime(restaurantId);
+  const retry = useServerFn(retryFailedJobs);
+  const { can } = useTenant();
+  const canRetry = can("owner", "manager");
+  // Background retry worker: while a manager has the hub open, failed imports are retried every 5 minutes.
+  useEffect(() => {
+    if (!restaurantId || !canRetry) return;
+    const tick = () => retry({ data: { restaurantId } }).catch(() => {});
+    tick();
+    const t = setInterval(tick, 5 * 60_000);
+    return () => clearInterval(t);
+  }, [restaurantId, canRetry, retry]);
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const unread = useQuery({

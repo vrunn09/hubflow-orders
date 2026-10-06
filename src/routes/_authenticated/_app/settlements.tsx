@@ -35,7 +35,7 @@ function Settlements() {
 
   return (
     <div>
-      <PageHeader title="Settlements" description="Commission rates are estimates until each platform's settlement statement is imported."
+      <PageHeader title="Settlements" description="Commission is not applied yet — net = gross − discounts − refunds."
         actions={<Button variant="saffron" disabled={busy} onClick={async () => { setBusy(true); try { const r = await run({ data: { restaurantId, days: 7 } }); toast.success(`Computed ${r.rows} settlement line(s)`); q.refetch(); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); } setBusy(false); }}>{busy ? "Processing…" : "Run 7-day settlement"}</Button>} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <StatCard label="Gross sales" value={formatINR(t("gross"))} /><StatCard label="Discounts" value={formatINR(t("discounts"))} /><StatCard label="Commission" value={formatINR(t("commission"))} />

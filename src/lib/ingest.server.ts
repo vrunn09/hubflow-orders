@@ -93,3 +93,25 @@ export async function sha256Hex(input: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+/** Re-runs failed ingestion jobs whose backoff has elapsed (max 5 attempts, exponential backoff). */
+export async function retryDueJobs(admin: Admin, restaurantId?: string) {
+  let q = admin.from("ingestion_jobs").select("*").eq("status", "failed").lt("attempts", 5)
+    .lte("next_attempt_at", new Date().toISOString()).limit(25);
+  if (restaurantId) q = q.eq("restaurant_id", restaurantId);
+  const { data: jobs } = await q;
+  let recovered = 0;
+  for (const job of jobs ?? []) {
+    if (!job.source_id) continue;
+    const { data: src } = await admin.from("order_sources").select("connector_key,status").eq("id", job.source_id).maybeSingle();
+    if (!src || src.status !== "connected") continue;
+    const r = await ingestOrder(admin, { restaurantId: job.restaurant_id, sourceId: job.source_id, connectorKey: src.connector_key, raw: job.payload });
+    const attempts = job.attempts + 1;
+    await admin.from("ingestion_jobs").update({
+      status: r.status === "failed" ? "failed" : "done", attempts,
+      next_attempt_at: new Date(Date.now() + 60_000 * 2 ** attempts).toISOString(), updated_at: new Date().toISOString(),
+    }).eq("id", job.id);
+    if (r.status !== "failed") recovered++;
+  }
+  return { checked: jobs?.length ?? 0, recovered };
+}

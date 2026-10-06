@@ -6,4 +6,6 @@
 - [ ] Live Gmail connection — blocked: needs a Google OAuth client set up for the workspace
 - [ ] Live Zomato / Swiggy / IRCTC — blocked: needs official partner API access from each platform
 - [ ] Online payment gateway verification — blocked: needs a payment provider choice
-- [ ] Scheduled background retries/cleanup (currently retried on Sync Now)
+- [x] Background retries (auto every 5 min, on new webhooks, on Sync Now) + nightly cleanup
+- [ ] Commission rates — on hold by owner
+- [ ] Platform admin account — blocked: needs the admin email
