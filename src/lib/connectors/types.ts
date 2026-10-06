@@ -43,6 +43,10 @@ export interface ConnectorDefinition {
   /** Whether a production integration is actually implemented in this codebase. */
   productionReady: boolean;
   productionNote: string;
+  /** If the fixed normalizer can't read a payload, let the AI reader convert it. */
+  aiFallback?: boolean;
+  /** Extra search words (e.g. "pooja peda", "ecatering"). */
+  keywords?: string[];
   /** Converts a raw source payload into the unified order format. */
   normalize(raw: unknown): UnifiedOrder;
   /** Produces a realistic sample raw payload for mock/test mode. */

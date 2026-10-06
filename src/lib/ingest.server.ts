@@ -32,7 +32,16 @@ export async function ingestOrder(
     }).eq("id", job.id);
 
   try {
-    const order = getConnector(args.connectorKey).normalize(args.raw);
+    const connector = getConnector(args.connectorKey);
+    let order;
+    try {
+      order = connector.normalize(args.raw);
+    } catch (e) {
+      // AI processing layer: any connector that allows it falls back to the AI reader for unknown formats.
+      if (!connector.aiFallback) throw e;
+      const { aiNormalizeOrder } = await import("./ai-normalize.server");
+      order = await aiNormalizeOrder(args.raw, connector.name);
+    }
     const subtotal = order.items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
     const total = Math.max(0, subtotal + order.tax + order.delivery_fee - order.discount);
 
