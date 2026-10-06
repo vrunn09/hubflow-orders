@@ -27,7 +27,9 @@ export const Route = createFileRoute("/api/public/ingest/$sourceId")({
         if ((count ?? 0) > 120) return json({ error: "Rate limited" }, 429);
 
         let raw: unknown;
-        try { raw = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+        const bodyText = await request.text();
+        if (!bodyText.trim() || bodyText.length > 100_000) return json({ error: "Empty or oversized body" }, 400);
+        try { raw = JSON.parse(bodyText); } catch { raw = bodyText; } // plain text (e.g. forwarded email) goes to the AI reader
         const result = await ingestOrder(supabaseAdmin, { restaurantId: src.restaurant_id, sourceId: src.id, connectorKey: src.connector_key, raw });
         await supabaseAdmin.from("order_sources").update({ last_sync_at: new Date().toISOString() }).eq("id", src.id);
         await retryDueJobs(supabaseAdmin, src.restaurant_id).catch(() => {});
