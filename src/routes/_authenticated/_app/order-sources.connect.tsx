@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Check, Copy, FlaskConical, Info, Lock, Mail, Search } from "lucide-react";
+import { Check, Copy, FlaskConical, Info, Lock, Search } from "lucide-react";
 import { useTenant } from "@/lib/tenant";
 import { connectSource, syncSource, testSourceConnection } from "@/lib/api.functions";
 import { CONNECTORS } from "@/lib/connectors/registry";

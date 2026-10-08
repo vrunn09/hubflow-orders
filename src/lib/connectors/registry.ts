@@ -102,12 +102,6 @@ export const CONNECTORS: ConnectorDefinition[] = [
     normalize: normalizeRail, mockPayload: mockRailOrder, aiFallback: true,
   },
   {
-    key: "gmail", name: "Gmail / Google Email", description: "Parse order confirmation emails from your Google inbox.",
-    methods: ["oauth", "email_parse"], productionReady: false,
-    productionNote: "Uses Google OAuth + Gmail API (read-only). Requires a Google OAuth client to be configured for this workspace before real inboxes can be connected.",
-    normalize: normalizeEmail, mockPayload: mockEmail, aiFallback: true, keywords: ["google", "email", "inbox"],
-  },
-  {
     key: "gmail_forward", name: "Gmail Inbox (auto-forward)", description: "Order emails from IRCTC, Zoop, RailRestro, Pooja Peda etc. land in your Gmail and appear here within a minute.",
     methods: ["webhook", "email_parse"], productionReady: true, aiFallback: true,
     keywords: ["gmail", "google", "email", "inbox", "irctc", "zoop", "railrestro", "yatrirestro", "railrecipe", "pooja peda"],
