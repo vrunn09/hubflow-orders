@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { isAutoPrint, printOrderBill } from "@/lib/print-bill";
 
 /** One realtime subscription per tenant: keeps every order/notification/source query fresh without refresh. */
 export function useTenantRealtime(restaurantId: string) {
@@ -17,9 +18,10 @@ export function useTenantRealtime(restaurantId: string) {
         qc.invalidateQueries({ queryKey: ["order"] });
         qc.invalidateQueries({ queryKey: ["dashboard"] });
         if (p.eventType === "INSERT") {
-          const o = p.new as { order_number: string; customer_name: string };
+          const o = p.new as { id: string; order_number: string; customer_name: string };
           toast.success(`New order ${o.order_number}`, { description: o.customer_name });
           playOrderChime();
+          if (isAutoPrint()) printOrderBill(o.id).catch(() => toast.error("Auto-print failed — open the order and press Print bill"));
         }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter }, () =>
