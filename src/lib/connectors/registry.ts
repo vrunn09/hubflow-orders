@@ -108,6 +108,13 @@ export const CONNECTORS: ConnectorDefinition[] = [
     normalize: normalizeEmail, mockPayload: mockEmail, aiFallback: true, keywords: ["google", "email", "inbox"],
   },
   {
+    key: "gmail_forward", name: "Gmail Inbox (auto-forward)", description: "Order emails from IRCTC, Zoop, RailRestro, Pooja Peda etc. land in your Gmail and appear here within a minute.",
+    methods: ["webhook", "email_parse"], productionReady: true, aiFallback: true,
+    keywords: ["gmail", "google", "email", "inbox", "irctc", "zoop", "railrestro", "yatrirestro", "railrecipe", "pooja peda"],
+    productionNote: "A small script runs inside your own Gmail and sends new order emails to your private link. No password is shared.",
+    normalize: normalizeEmail, mockPayload: mockEmail,
+  },
+  {
     key: "zomato", name: "Zomato", description: "Orders from Zomato for Business.",
     methods: ["webhook", "api_key"], productionReady: false,
     productionNote: "Requires official partner API access granted by Zomato. Until then, use test mode.",

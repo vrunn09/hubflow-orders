@@ -3,10 +3,11 @@
 - [x] Connector engine, ingestion pipeline, webhook endpoint, mock connectors
 - [x] Orders, order details/timeline, kitchen display, delivery, partners
 - [x] Payments, settlements, analytics, reports, notifications, staff, admin
-- [ ] Live Gmail connection — blocked: needs a Google OAuth client set up for the workspace
-- [ ] Live Zomato / Swiggy / IRCTC — blocked: needs official partner API access from each platform
-- [ ] Online payment gateway verification — blocked: needs a payment provider choice
-- [x] Background retries (auto every 5 min, on new webhooks, on Sync Now) + nightly cleanup
-- [x] Platform search, AI order reader (any format → unified order), AI fallback for all connectors
+- [x] Background retries + nightly cleanup
+- [x] Platform search, AI order reader, AI fallback for all connectors
+- [x] GST optional, Change password option, new-order bell
+- [x] Gmail inbox orders via owner-run auto-forward script (no password shared)
+- [ ] Super admin access — blocked: needs the admin email
+- [ ] Razorpay online payments — blocked: needs Razorpay Key ID + Key Secret
 - [ ] Commission rates — on hold by owner
-- [ ] Platform admin account — blocked: needs the admin email
+- [ ] Not building: automated logins into merchant panels (platform terms, CAPTCHA/OTP)
