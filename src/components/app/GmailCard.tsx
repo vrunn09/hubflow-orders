@@ -86,7 +86,28 @@ export function GmailCard() {
   });
   const refresh = () => { qc.invalidateQueries({ queryKey: ["gmail"] }); qc.invalidateQueries({ queryKey: ["gmail-review"] }); qc.invalidateQueries({ queryKey: ["sources"] }); };
 
+  // Finish a Google sign-in that came back to this page directly (phones often open Google in a new tab).
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (!restaurantId || resumed.current) return;
+    resumed.current = true;
+    const r = takeStoredResult();
+    if (!r) return;
+    (async () => {
+      setBusy("connect");
+      try {
+        const code = resultToCode(r);
+        if (code) { const res = await complete({ data: { restaurantId, code } }); toast.success(`Gmail connected: ${res.email ?? ""}`); }
+        refresh();
+        sync({ data: { restaurantId } }).then(refresh).catch(() => {});
+      } catch (e) { toast.error(e instanceof Error ? e.message : "Could not connect Gmail"); }
+      setBusy(null);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurantId]);
+
   const connect = async () => {
+    takeStoredResult();
     const popup = window.open("", "gmail-oauth", "width=520,height=680");
     if (!popup) { toast.error("Popup blocked — please allow popups and try again."); return; }
     setBusy("connect");
