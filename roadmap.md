@@ -7,7 +7,11 @@
 - [x] Platform search, AI order reader, AI fallback for all connectors
 - [x] GST optional, Change password option, new-order bell
 - [x] Gmail inbox orders via owner-run auto-forward script (no password shared)
-- [ ] Super admin access — blocked: needs the admin email
+- [x] Gmail OAuth connect (Google popup), platform admin for railfeasto.official@gmail.com
+- [x] New landing page (no pricing), Privacy Policy (/privacy), Terms (/terms)
+- [x] Google verification guide (Files: RailFeasto-Google-Verification-Guide.md)
+- [x] Super admin access — railfeasto.official@gmail.com granted admin via trigger
 - [ ] Razorpay online payments — blocked: needs Razorpay Key ID + Key Secret
 - [ ] Commission rates — on hold by owner
+- [ ] Real Gmail order email end-to-end test — blocked: needs owner's live test
 - [ ] Not building: automated logins into merchant panels (platform terms, CAPTCHA/OTP)
