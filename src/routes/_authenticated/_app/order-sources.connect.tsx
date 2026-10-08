@@ -111,7 +111,9 @@ function Wizard() {
 
         {step === 4 && result && (
           <div className="space-y-4">
-            {result.webhookSecret ? (
+            {result.webhookSecret && c?.key === "gmail_forward" ? (
+              <GmailScriptGuide url={`${window.location.origin}${result.webhookPath}`} secret={result.webhookSecret} />
+            ) : result.webhookSecret ? (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Give these to the platform. The secret won't be shown again.</p>
                 <Copyable label="Endpoint (POST)" value={`${window.location.origin}${result.webhookPath}`} />
