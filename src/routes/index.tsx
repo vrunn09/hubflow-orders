@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, ChefHat, Mail, Plug, Train, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/app/Logo";
@@ -26,13 +28,23 @@ const FEATURES = [
 ];
 
 function Landing() {
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
         <Logo />
         <div className="flex gap-2">
-          <Button variant="ghost" asChild><Link to="/login">Sign in</Link></Button>
-          <Button variant="saffron" asChild><Link to="/signup">Start free</Link></Button>
+          {signedIn ? (
+            <Button variant="saffron" asChild><Link to="/dashboard">Open dashboard <ArrowRight /></Link></Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild><Link to="/login">Sign in</Link></Button>
+              <Button variant="saffron" asChild><Link to="/signup">Start free</Link></Button>
+            </>
+          )}
         </div>
       </header>
       <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:pt-20">

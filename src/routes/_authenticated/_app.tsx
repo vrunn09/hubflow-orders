@@ -17,7 +17,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/app/states";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/_app")({ component: AppLayout });
+export const Route = createFileRoute("/_authenticated/_app")({ component: AppLayout, pendingComponent: AppLoading, pendingMs: 0 });
+
+function AppLoading() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background">
+      <Logo />
+      <div className="text-sm text-muted-foreground">Dashboard khul raha hai…</div>
+    </div>
+  );
+}
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; roles: Role[] };
 const ALL: Role[] = ["owner", "manager", "kitchen", "delivery"];
