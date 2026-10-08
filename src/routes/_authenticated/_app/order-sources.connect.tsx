@@ -33,8 +33,8 @@ function Wizard() {
   const sync = useServerFn(syncSource);
   const [key, setKey] = useState(sp.connector ?? "");
   const [step, setStep] = useState(sp.connector ? 1 : 0);
-  const [env, setEnv] = useState<"mock" | "production">("mock");
   const c = CONNECTORS.find((x) => x.key === key);
+  const [env, setEnv] = useState<"mock" | "production">(c?.productionReady ? "production" : "mock");
   const [name, setName] = useState(c?.name ?? "");
   const [busy, setBusy] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
@@ -60,7 +60,7 @@ function Wizard() {
               <Input autoFocus className="pl-8" placeholder="Search platform — IRCTC, Zomato, Swiggy, Zoop…" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
             <div className="grid gap-2 sm:grid-cols-2">
               {matches.map((x) => (
-                <button key={x.key} onClick={() => { setKey(x.key); setName(x.name); setStep(1); }} className="rounded-lg border p-3 text-left hover:border-saffron">
+                <button key={x.key} onClick={() => { setKey(x.key); setName(x.name); setEnv(x.productionReady ? "production" : "mock"); setStep(1); }} className="rounded-lg border p-3 text-left hover:border-saffron">
                   <div className="flex items-center gap-2 font-semibold">{x.name}{x.productionReady ? <span className="rounded bg-success-soft px-1.5 text-[10px] text-success">Live sync</span> : <span className="rounded bg-muted px-1.5 text-[10px] text-muted-foreground">Sync unavailable</span>}</div>
                   <div className="mt-0.5 text-xs text-muted-foreground">{x.description}</div>
                 </button>
@@ -73,10 +73,12 @@ function Wizard() {
         {step === 1 && c && (
           <div className="space-y-3">
             <h2 className="font-semibold">How should {c.name} connect?</h2>
+            {!c.productionReady && (
             <label className={cn("flex cursor-pointer gap-3 rounded-lg border p-3", env === "mock" && "border-saffron bg-saffron-soft/50")}>
               <input type="radio" checked={env === "mock"} onChange={() => setEnv("mock")} className="mt-1" />
               <div><div className="flex items-center gap-1.5 font-medium"><FlaskConical className="size-4" />Test mode (mock connector)</div><p className="text-xs text-muted-foreground">Generates realistic sample orders through the real pipeline. Clearly labelled “Test mode” everywhere. No external account is touched.</p></div>
             </label>
+            )}
             <label className={cn("flex gap-3 rounded-lg border p-3", c.productionReady ? "cursor-pointer" : "opacity-60", env === "production" && "border-saffron bg-saffron-soft/50")}>
               <input type="radio" disabled={!c.productionReady} checked={env === "production"} onChange={() => setEnv("production")} className="mt-1" />
               <div><div className="flex items-center gap-1.5 font-medium"><Lock className="size-4" />Live — {c.methods.map((m) => m.replace("_", " ")).join(" / ")}</div><p className="text-xs text-muted-foreground">{c.productionNote}</p></div>
