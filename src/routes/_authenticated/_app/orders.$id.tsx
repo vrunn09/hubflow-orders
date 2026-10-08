@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/lib/tenant";
 import { usePartners } from "@/lib/queries";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/_app/orders/$id")({
 
 function OrderDetail() {
   const { id } = Route.useParams();
-  const { restaurantId, role, can } = useTenant();
+  const { restaurantId, role, can, current } = useTenant();
   const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["order", id],
@@ -66,6 +66,7 @@ function OrderDetail() {
         <Pill value={o.status} /><SourceTag k={o.source_key} />
         <span className="text-xs text-muted-foreground">External: {o.external_order_id}</span>
         <div className="ml-auto flex flex-wrap gap-2">
+          {fin && <Button size="sm" variant="outline" onClick={() => printBill(o, current?.restaurant.name ?? "Restaurant")}><Printer />Print bill</Button>}
           {next.map((s) => (
             <Button key={s} size="sm" variant={s === "CANCELLED" || s === "FAILED" ? "outline" : "saffron"} disabled={busy}
               onClick={() => (s === "CANCELLED" || s === "FAILED" ? setConfirm(s) : run(() => setStatus({ data: { orderId: o.id, to: s } }), `Marked ${STATUS_LABEL[s]}`))}>
@@ -77,7 +78,7 @@ function OrderDetail() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <Card title="Items">
+          <Card title="Items" action={fin ? <Button size="sm" variant="ghost" onClick={() => printBill(o, current?.restaurant.name ?? "Restaurant")}><Printer />Print</Button> : undefined}>
             <table className="w-full text-sm"><tbody className="divide-y">
               {o.order_items.map((i) => <tr key={i.id}><td className="py-2"><span className="tabular font-semibold">{i.quantity}×</span> {i.name}{i.notes && <div className="text-xs text-muted-foreground">{i.notes}</div>}</td><td className="tabular py-2 text-right">{fin ? formatINR(Number(i.unit_price) * i.quantity) : ""}</td></tr>)}
             </tbody></table>
@@ -144,4 +145,29 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 function Dl({ rows }: { rows: [string, React.ReactNode][] }) {
   return <dl className="space-y-1.5 text-sm">{rows.map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="text-right font-medium">{v || "—"}</dd></div>)}</dl>;
+}
+
+type BillOrder = { order_number: string; external_order_id: string | null; created_at: string; customer_name: string; customer_phone: string | null; train_number: string | null; train_name: string | null; coach: string | null; seat: string | null; delivery_station: string | null; subtotal: number; tax: number; delivery_fee: number; discount: number; total: number; payment_method: string; payment_status: string; order_items: { name: string; quantity: number; unit_price: number }[] };
+function printBill(o: BillOrder, restaurant: string) {
+  const esc = (v: unknown) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  const rs = (n: number) => "₹" + Number(n).toFixed(2);
+  const row = (l: string, v: string) => `<tr><td>${esc(l)}</td><td class="r">${esc(v)}</td></tr>`;
+  const html = `<!doctype html><html><head><title>Bill ${esc(o.order_number)}</title><style>
+    body{font-family:monospace;width:72mm;margin:0 auto;padding:4mm;font-size:12px;color:#000}
+    h1{font-size:15px;text-align:center;margin:0 0 4px}.c{text-align:center}hr{border:0;border-top:1px dashed #000;margin:6px 0}
+    table{width:100%;border-collapse:collapse}td{padding:1px 0;vertical-align:top}.r{text-align:right}.b td{font-weight:bold;font-size:14px}
+    @page{size:80mm auto;margin:0}</style></head><body>
+    <h1>${esc(restaurant)}</h1><div class="c">Order ${esc(o.order_number)}<br>${esc(new Date(o.created_at).toLocaleString("en-IN"))}</div><hr>
+    <div>${esc(o.customer_name)}${o.customer_phone ? " · " + esc(o.customer_phone) : ""}</div>
+    ${o.train_number ? `<div>Train ${esc(o.train_number)} ${esc(o.train_name)}</div>` : ""}
+    ${o.coach || o.seat ? `<div>Coach ${esc(o.coach)} · Seat ${esc(o.seat)}</div>` : ""}
+    ${o.delivery_station ? `<div>Station: ${esc(o.delivery_station)}</div>` : ""}<hr>
+    <table>${o.order_items.map((i) => `<tr><td>${i.quantity}× ${esc(i.name)}</td><td class="r">${rs(i.quantity * Number(i.unit_price))}</td></tr>`).join("")}</table><hr>
+    <table>${row("Subtotal", rs(o.subtotal))}${Number(o.tax) ? row("Tax", rs(o.tax)) : ""}${Number(o.delivery_fee) ? row("Delivery fee", rs(o.delivery_fee)) : ""}${Number(o.discount) ? row("Discount", "-" + rs(o.discount)) : ""}
+    <tr class="b"><td>TOTAL</td><td class="r">${rs(o.total)}</td></tr></table><hr>
+    <div>Payment: ${esc(o.payment_method)} (${esc(o.payment_status)})</div><div class="c" style="margin-top:8px">Thank you! Happy journey 🚆</div>
+    <script>window.onload=function(){window.print();setTimeout(function(){window.close()},500)}</script></body></html>`;
+  const w = window.open("", "_blank", "width=420,height=640");
+  if (!w) { toast.error("Popup blocked — allow popups to print"); return; }
+  w.document.write(html); w.document.close();
 }
