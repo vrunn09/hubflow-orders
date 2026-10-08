@@ -140,8 +140,8 @@ function OrderDetail() {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="surface p-4"><h2 className="mb-3 text-sm font-semibold">{title}</h2>{children}</section>;
+function Card({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
+  return <section className="surface p-4"><div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold">{title}</h2>{action}</div>{children}</section>;
 }
 function Dl({ rows }: { rows: [string, React.ReactNode][] }) {
   return <dl className="space-y-1.5 text-sm">{rows.map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="text-right font-medium">{v || "—"}</dd></div>)}</dl>;
