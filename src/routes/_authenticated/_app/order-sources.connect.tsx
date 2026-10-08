@@ -163,3 +163,54 @@ function Copyable({ label, value }: { label: string; value: string }) {
         <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(value); toast.success("Copied"); }} aria-label="Copy"><Copy /></Button></div></div>
   );
 }
+
+function gmailScript(url: string, secret: string) {
+  return `// RailFeasto Order Hub — Gmail auto-forward
+var HUB_URL = "${url}";
+var HUB_KEY = "${secret}";
+var SEARCH = 'newer_than:2d -label:hub-sent subject:(order OR booking) from:(irctc OR zoop OR railrestro OR yatrirestro OR railrecipe OR poojapeda OR travelkhana OR railfeasto)';
+
+function sendOrders() {
+  var label = GmailApp.getUserLabelByName("hub-sent") || GmailApp.createLabel("hub-sent");
+  GmailApp.search(SEARCH, 0, 20).forEach(function (thread) {
+    var msg = thread.getMessages().pop();
+    var body = "Subject: " + msg.getSubject() + "\\nFrom: " + msg.getFrom() + "\\n\\n" + msg.getPlainBody();
+    var res = UrlFetchApp.fetch(HUB_URL, {
+      method: "post", contentType: "text/plain", muteHttpExceptions: true,
+      headers: { Authorization: "Bearer " + HUB_KEY }, payload: body.slice(0, 90000),
+    });
+    if (res.getResponseCode() < 300) thread.addLabel(label);
+  });
+}
+
+function setup() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger("sendOrders").timeBased().everyMinutes(1).create();
+  sendOrders();
+}
+`;
+}
+
+function GmailScriptGuide({ url, secret }: { url: string; secret: string }) {
+  const [copied, setCopied] = useState(false);
+  const code = gmailScript(url, secret);
+  const copy = async () => { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-medium">Apne Gmail mein yeh 4 kadam karein (ek hi baar):</p>
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>Usi Gmail account se script.google.com kholein aur "New project" banayein.</li>
+        <li>Neeche ka poora code copy karke wahan paste karein aur Save karein.</li>
+        <li>Upar "setup" function chunein aur Run dabayein.</li>
+        <li>Google permission maange to Allow karein. Ab har minute naye order email yahan aayenge.</li>
+      </ol>
+      <div className="relative">
+        <pre className="max-h-64 overflow-auto rounded-md bg-muted p-3 text-[11px] leading-relaxed">{code}</pre>
+        <Button size="sm" variant="outline" className="absolute right-2 top-2" onClick={copy}>
+          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}{copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Yeh code sirf ek baar dikhega — ise kisi ke saath share na karein.</p>
+    </div>
+  );
+}
