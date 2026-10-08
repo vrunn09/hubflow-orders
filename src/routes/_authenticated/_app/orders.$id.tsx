@@ -43,7 +43,7 @@ function OrderDetail() {
 
   const run = async (fn: () => Promise<unknown>, ok: string) => {
     setBusy(true);
-    try { await fn(); toast.success(ok); qc.invalidateQueries({ queryKey: ["order", id] }); }
+    try { await fn(); toast.success(ok); await qc.invalidateQueries({ queryKey: ["order", id] }); await q.refetch(); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Action failed"); }
     setBusy(false);
   };
