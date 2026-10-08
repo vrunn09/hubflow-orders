@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/_app/help")({
 });
 
 const FAQ: [string, string][] = [
-  ["What does “Test mode” mean?", "Test-mode sources use mock connectors that generate realistic sample orders through the real pipeline. They never touch an external account. Live sources are labelled “Live”."],
+  ["Are all sources live?", "Yes. Every connected source is a live connection — orders come only from your real Gmail or other authorized platforms. No sample or test orders are created."],
   ["How do orders reach the hub?", "Each source has its own connector. It hands the raw order to one central pipeline that validates, normalizes, removes duplicates, saves, records the first status event and pushes a live update to every open screen."],
   ["Can I connect Zomato or Swiggy with my merchant password?", "No. We never collect merchant passwords or sign in to partner dashboards for you. Live connections need official API or webhook access granted by the platform."],
   ["How is a payment marked paid?", "Only by server-side verification. Cash is confirmed after delivery; online payments are confirmed from gateway or platform settlement data."],

@@ -81,7 +81,7 @@ function Sources() {
           </div>
           <h2 className="mb-3 mt-8 text-sm font-semibold">Available connectors</h2>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {CONNECTORS.filter((c) => !connectedKeys.has(c.key) && c.key !== "gmail_api").map((c) => (
+            {CONNECTORS.filter((c) => !connectedKeys.has(c.key) && c.key !== "gmail_api" && c.key !== "manual" && c.productionReady).map((c) => (
               <Link key={c.key} to="/order-sources/connect" search={{ connector: c.key }} className="surface flex items-center gap-3 p-3 hover:border-saffron/50">
                 <div className="min-w-0 flex-1"><div className="text-sm font-semibold">{c.name}</div><div className="truncate text-xs text-muted-foreground">{c.description}</div></div>
                 <Pill value="not_connected" label="Not connected" />

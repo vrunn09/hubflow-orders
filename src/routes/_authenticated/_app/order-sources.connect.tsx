@@ -34,14 +34,14 @@ function Wizard() {
   const [key, setKey] = useState(sp.connector ?? "");
   const [step, setStep] = useState(sp.connector ? 1 : 0);
   const c = CONNECTORS.find((x) => x.key === key);
-  const [env, setEnv] = useState<"mock" | "production">(c?.productionReady ? "production" : "mock");
+  const [env, setEnv] = useState<"mock" | "production">("production");
   const [name, setName] = useState(c?.name ?? "");
   const [busy, setBusy] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [result, setResult] = useState<{ sourceId: string; webhookSecret: string | null; webhookPath: string | null } | null>(null);
   const [search, setSearch] = useState("");
   const ql = search.trim().toLowerCase();
-  const matches = CONNECTORS.filter((x) => x.key !== "manual" && x.key !== "gmail_api" && (!ql || [x.name, x.key, ...(x.keywords ?? [])].some((w) => w.toLowerCase().includes(ql))));
+  const matches = CONNECTORS.filter((x) => x.key !== "manual" && x.key !== "gmail_api" && x.productionReady && (!ql || [x.name, x.key, ...(x.keywords ?? [])].some((w) => w.toLowerCase().includes(ql))));
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
 
   const guard = async (fn: () => Promise<void>) => { setBusy(true); try { await fn(); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); } setBusy(false); };
@@ -60,7 +60,7 @@ function Wizard() {
               <Input autoFocus className="pl-8" placeholder="Search platform — IRCTC, Zomato, Swiggy, Zoop…" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
             <div className="grid gap-2 sm:grid-cols-2">
               {matches.map((x) => (
-                <button key={x.key} onClick={() => { setKey(x.key); setName(x.name); setEnv(x.productionReady ? "production" : "mock"); setStep(1); }} className="rounded-lg border p-3 text-left hover:border-saffron">
+                <button key={x.key} onClick={() => { setKey(x.key); setName(x.name); setEnv("production"); setStep(1); }} className="rounded-lg border p-3 text-left hover:border-saffron">
                   <div className="flex items-center gap-2 font-semibold">{x.name}{x.productionReady ? <span className="rounded bg-success-soft px-1.5 text-[10px] text-success">Live sync</span> : <span className="rounded bg-muted px-1.5 text-[10px] text-muted-foreground">Sync unavailable</span>}</div>
                   <div className="mt-0.5 text-xs text-muted-foreground">{x.description}</div>
                 </button>
