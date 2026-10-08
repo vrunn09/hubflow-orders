@@ -195,10 +195,10 @@ function Landing() {
             </div>
           </div>
           <div className="relative hidden lg:block">
-            <div className="absolute -top-8 right-0 z-10 space-y-2">
+            <div className="absolute -top-6 right-2 z-10 space-y-2">
               {PLATFORM_CARDS.map((p) => <PlatformCard key={p.name} {...p} />)}
             </div>
-            <div className="mt-24">
+            <div className="mt-52">
               <DashboardMockup />
             </div>
           </div>
@@ -232,9 +232,9 @@ function Landing() {
       {/* How it works */}
       <section id="how" className="bg-sidebar">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-2">
-          <div className="relative">
+          <div className="relative pb-12">
             <DashboardMockup />
-            <p className="absolute -bottom-6 right-2 -rotate-6 text-lg font-bold italic text-saffron">More orders.<br />Less chaos.</p>
+            <p className="absolute -bottom-1 right-0 -rotate-6 text-lg font-bold italic text-saffron">More orders.<br />Less chaos.</p>
           </div>
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-saffron">How It Works</p>
