@@ -55,6 +55,69 @@ export type Database = {
           },
         ]
       }
+      connected_email_accounts: {
+        Row: {
+          connected_by: string
+          connection_key_ciphertext: string
+          connection_status: string
+          created_at: string
+          email_address: string | null
+          emails_processed: number
+          id: string
+          last_checked_at: string | null
+          last_error: string | null
+          provider: string
+          restaurant_id: string
+          source_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          connected_by: string
+          connection_key_ciphertext: string
+          connection_status?: string
+          created_at?: string
+          email_address?: string | null
+          emails_processed?: number
+          id?: string
+          last_checked_at?: string | null
+          last_error?: string | null
+          provider?: string
+          restaurant_id: string
+          source_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          connected_by?: string
+          connection_key_ciphertext?: string
+          connection_status?: string
+          created_at?: string
+          email_address?: string | null
+          emails_processed?: number
+          id?: string
+          last_checked_at?: string | null
+          last_error?: string | null
+          provider?: string
+          restaurant_id?: string
+          source_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connected_email_accounts_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: true
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connected_email_accounts_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "order_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string
@@ -182,6 +245,81 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "delivery_partners_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      imported_emails: {
+        Row: {
+          classification: string
+          confidence: number
+          created_at: string
+          error_message: string | null
+          gmail_message_id: string
+          id: string
+          order_id: string | null
+          platform: string
+          processed_at: string | null
+          processing_status: string
+          received_at: string | null
+          restaurant_id: string
+          sender: string | null
+          sender_domain: string | null
+          snippet: string | null
+          subject: string | null
+          thread_id: string | null
+        }
+        Insert: {
+          classification?: string
+          confidence?: number
+          created_at?: string
+          error_message?: string | null
+          gmail_message_id: string
+          id?: string
+          order_id?: string | null
+          platform?: string
+          processed_at?: string | null
+          processing_status?: string
+          received_at?: string | null
+          restaurant_id: string
+          sender?: string | null
+          sender_domain?: string | null
+          snippet?: string | null
+          subject?: string | null
+          thread_id?: string | null
+        }
+        Update: {
+          classification?: string
+          confidence?: number
+          created_at?: string
+          error_message?: string | null
+          gmail_message_id?: string
+          id?: string
+          order_id?: string | null
+          platform?: string
+          processed_at?: string | null
+          processing_status?: string
+          received_at?: string | null
+          restaurant_id?: string
+          sender?: string | null
+          sender_domain?: string | null
+          snippet?: string | null
+          subject?: string | null
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_emails_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_emails_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
             referencedRelation: "restaurants"
@@ -490,6 +628,7 @@ export type Database = {
           seat: string | null
           source_id: string | null
           source_key: string
+          source_platform: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           tax: number
@@ -522,6 +661,7 @@ export type Database = {
           seat?: string | null
           source_id?: string | null
           source_key: string
+          source_platform?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           tax?: number
@@ -554,6 +694,7 @@ export type Database = {
           seat?: string | null
           source_id?: string | null
           source_key?: string
+          source_platform?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           tax?: number

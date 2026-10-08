@@ -81,7 +81,7 @@ export async function aiNormalizeOrder(raw: unknown, platformName: string): Prom
   const p = JSON.parse(out);
   if (!p.is_order) throw new Error("AI: payload is not a food order");
   return unifiedOrderSchema.parse({
-    external_order_id: p.external_order_id ?? undefined,
+    external_order_id: p.external_order_id ?? (raw && typeof raw === "object" && "messageId" in raw ? `email-${String((raw as { messageId: unknown }).messageId)}` : undefined),
     customer_name: p.customer_name ?? "Customer",
     customer_phone: p.customer_phone?.slice(0, 20), train_number: p.train_number?.slice(0, 10), train_name: p.train_name,
     journey_date: /^\d{4}-\d{2}-\d{2}$/.test(p.journey_date ?? "") ? p.journey_date : null,

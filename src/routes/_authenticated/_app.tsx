@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { claimInvites, retryFailedJobs } from "@/lib/api.functions";
+import { syncGmailNow } from "@/lib/gmail.functions";
 import { TenantProvider, useMemberships, useTenant, type Role } from "@/lib/tenant";
 import { useTenantRealtime } from "@/lib/realtime";
 import { Logo } from "@/components/app/Logo";
@@ -116,6 +117,15 @@ function Shell() {
     const t = setInterval(tick, 5 * 60_000);
     return () => clearInterval(t);
   }, [restaurantId, canRetry, retry]);
+  // Gmail watcher: checks the connected Gmail every minute while a manager has the hub open.
+  const gmailSync = useServerFn(syncGmailNow);
+  useEffect(() => {
+    if (!restaurantId || !canRetry) return;
+    const tick = () => gmailSync({ data: { restaurantId } }).catch(() => {});
+    const first = setTimeout(tick, 5_000);
+    const t = setInterval(tick, 60_000);
+    return () => { clearTimeout(first); clearInterval(t); };
+  }, [restaurantId, canRetry, gmailSync]);
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const unread = useQuery({

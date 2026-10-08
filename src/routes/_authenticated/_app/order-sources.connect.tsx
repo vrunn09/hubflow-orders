@@ -41,7 +41,7 @@ function Wizard() {
   const [result, setResult] = useState<{ sourceId: string; webhookSecret: string | null; webhookPath: string | null } | null>(null);
   const [search, setSearch] = useState("");
   const ql = search.trim().toLowerCase();
-  const matches = CONNECTORS.filter((x) => x.key !== "manual" && (!ql || [x.name, x.key, ...(x.keywords ?? [])].some((w) => w.toLowerCase().includes(ql))));
+  const matches = CONNECTORS.filter((x) => x.key !== "manual" && x.key !== "gmail_api" && (!ql || [x.name, x.key, ...(x.keywords ?? [])].some((w) => w.toLowerCase().includes(ql))));
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
 
   const guard = async (fn: () => Promise<void>) => { setBusy(true); try { await fn(); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); } setBusy(false); };

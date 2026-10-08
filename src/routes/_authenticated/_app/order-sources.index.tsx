@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { KeyRound, Pause, Play, Plus, RefreshCw, Unplug } from "lucide-react";
+import { GmailCard } from "@/components/app/GmailCard";
 import { CredentialsDialog } from "@/components/app/CredentialsDialog";
 import { useTenant } from "@/lib/tenant";
 import { useSources } from "@/lib/queries";
@@ -43,6 +44,7 @@ function Sources() {
     <div>
       <PageHeader title="Order sources" description="Each source runs through its own connector into the same order pipeline."
         actions={<Button variant="saffron" asChild><Link to="/order-sources/connect"><Plus />Connect new platform</Link></Button>} />
+      <GmailCard />
       {q.isLoading ? <CardsSkeleton n={6} /> : q.error ? <ErrorState error={q.error} retry={() => q.refetch()} /> : (
         <>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -65,13 +67,13 @@ function Sources() {
                   {s.last_error && <p className="mt-2 rounded bg-destructive-soft px-2 py-1 text-xs text-destructive">{s.last_error}</p>}
                   {s.status === "error" && <p className="mt-2 text-xs font-medium text-destructive">Connection failed — reconnect to resume.</p>}
                   <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
-                    {s.status === "connected" && s.connector_key !== "manual" && <Button size="sm" variant="outline" disabled={isSync} onClick={() => run(s.id, () => sync({ data: { sourceId: s.id } }), (r) => { const x = r as { created: number; duplicates: number; failed: number }; return `Synced: ${x.created} new, ${x.duplicates} duplicate, ${x.failed} failed`; })}><RefreshCw className={isSync ? "animate-spin" : ""} />Sync now</Button>}
+                    {s.status === "connected" && s.connector_key !== "manual" && s.connector_key !== "gmail_api" && <Button size="sm" variant="outline" disabled={isSync} onClick={() => run(s.id, () => sync({ data: { sourceId: s.id } }), (r) => { const x = r as { created: number; duplicates: number; failed: number }; return `Synced: ${x.created} new, ${x.duplicates} duplicate, ${x.failed} failed`; })}><RefreshCw className={isSync ? "animate-spin" : ""} />Sync now</Button>}
                     {s.status === "connected" && s.connector_key !== "manual" && <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => run(s.id, () => act({ data: { sourceId: s.id, action: "pause" } }), () => "Source paused")}><Pause />Pause</Button>}
                     {s.status === "paused" && <Button size="sm" variant="outline" onClick={() => run(s.id, () => act({ data: { sourceId: s.id, action: "resume" } }), () => "Source resumed")}><Play />Resume</Button>}
                     {s.status === "error" && <Button size="sm" variant="saffron" onClick={() => run(s.id, () => act({ data: { sourceId: s.id, action: "reconnect" } }), () => "Reconnected")}>Reconnect</Button>}
                     {s.status === "not_connected" && <Button size="sm" variant="saffron" asChild><Link to="/order-sources/connect" search={{ connector: s.connector_key }}>Connect</Link></Button>}
-                    {s.connector_key !== "manual" && s.status !== "not_connected" && <Button size="sm" variant="outline" onClick={() => setCred({ id: s.id, name: s.display_name })}><KeyRound />Change password</Button>}
-                    {s.connector_key !== "manual" && s.status !== "not_connected" && can("owner") && <Button size="sm" variant="ghost" className="ml-auto text-destructive" onClick={() => setDisc(s.id)}><Unplug />Disconnect</Button>}
+                    {s.connector_key !== "manual" && s.connector_key !== "gmail_api" && s.status !== "not_connected" && <Button size="sm" variant="outline" onClick={() => setCred({ id: s.id, name: s.display_name })}><KeyRound />Change password</Button>}
+                    {s.connector_key !== "manual" && s.connector_key !== "gmail_api" && s.status !== "not_connected" && can("owner") && <Button size="sm" variant="ghost" className="ml-auto text-destructive" onClick={() => setDisc(s.id)}><Unplug />Disconnect</Button>}
                   </div>
                 </div>
               );
@@ -79,7 +81,7 @@ function Sources() {
           </div>
           <h2 className="mb-3 mt-8 text-sm font-semibold">Available connectors</h2>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {CONNECTORS.filter((c) => !connectedKeys.has(c.key)).map((c) => (
+            {CONNECTORS.filter((c) => !connectedKeys.has(c.key) && c.key !== "gmail_api").map((c) => (
               <Link key={c.key} to="/order-sources/connect" search={{ connector: c.key }} className="surface flex items-center gap-3 p-3 hover:border-saffron/50">
                 <div className="min-w-0 flex-1"><div className="text-sm font-semibold">{c.name}</div><div className="truncate text-xs text-muted-foreground">{c.description}</div></div>
                 <Pill value="not_connected" label="Not connected" />
