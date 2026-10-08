@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Check, Copy, FlaskConical, Info, Lock, Mail, Search } from "lucide-react";
+import { Check, Copy, FlaskConical, Info, Lock, Search } from "lucide-react";
 import { useTenant } from "@/lib/tenant";
 import { connectSource, syncSource, testSourceConnection } from "@/lib/api.functions";
 import { CONNECTORS } from "@/lib/connectors/registry";
@@ -83,8 +83,7 @@ function Wizard() {
               <input type="radio" disabled={!c.productionReady} checked={env === "production"} onChange={() => setEnv("production")} className="mt-1" />
               <div><div className="flex items-center gap-1.5 font-medium"><Lock className="size-4" />Live — {c.methods.map((m) => m.replace("_", " ")).join(" / ")}</div><p className="text-xs text-muted-foreground">{c.productionNote}</p></div>
             </label>
-            {c.key === "gmail" && <GmailPanel />}
-            {!c.productionReady && c.key !== "gmail" && (
+            {!c.productionReady && (
               <div className="flex gap-2 rounded-md bg-info-soft p-3 text-xs text-info"><Info className="size-4 shrink-0" />Merchant login with username/password is not supported: these platforms don't allow outside apps to sign in to merchant panels, and storing your password would put your account at risk. We never ask for your merchant password and never sign in to partner dashboards on your behalf. Live connections use only the official API or webhook access the platform grants you.</div>
             )}
             <div className="flex justify-between pt-2"><Button variant="ghost" onClick={() => setStep(0)}>Back</Button><Button onClick={() => setStep(2)}>Continue</Button></div>
@@ -143,20 +142,6 @@ function Wizard() {
   );
 }
 
-function GmailPanel() {
-  return (
-    <div className="rounded-lg border p-4">
-      <div className="flex items-center gap-2 font-semibold"><Mail className="size-4" />Connect Google / Gmail</div>
-      <dl className="mt-3 grid grid-cols-2 gap-y-1 text-sm">
-        <dt className="text-muted-foreground">Connected account</dt><dd>—</dd>
-        <dt className="text-muted-foreground">Status</dt><dd>Not connected</dd>
-        <dt className="text-muted-foreground">Last sync</dt><dd>Never</dd>
-      </dl>
-      <Button className="mt-3" variant="outline" disabled>Connect Google Account</Button>
-      <p className="mt-2 text-xs text-muted-foreground">Live Gmail uses Google sign-in with read-only mail permission — your Google password is never seen or stored. A Google OAuth app must be set up for this workspace before this button activates. Use test mode meanwhile.</p>
-    </div>
-  );
-}
 
 function Copyable({ label, value }: { label: string; value: string }) {
   return (
