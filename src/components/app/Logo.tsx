@@ -1,15 +1,15 @@
 import { cn } from "@/lib/utils";
+import logoLight from "@/assets/logo-light.png";
+import logoDark from "@/assets/logo-dark.png";
 
-export function Logo({ inverted, compact }: { inverted?: boolean; compact?: boolean }) {
+export function Logo({ inverted, compact, className }: { inverted?: boolean; compact?: boolean; className?: string }) {
   return (
-    <span className="inline-flex items-center gap-2">
-      <span className="flex size-8 items-center justify-center rounded-md bg-saffron text-sm font-extrabold text-saffron-foreground">RF</span>
-      {!compact && (
-        <span className={cn("leading-none", inverted ? "text-sidebar-accent-foreground" : "text-foreground")}>
-          <span className="block text-sm font-bold">RailFeasto</span>
-          <span className={cn("block text-[11px] font-medium", inverted ? "text-sidebar-foreground" : "text-muted-foreground")}>Order Hub</span>
-        </span>
-      )}
-    </span>
+    <img
+      src={inverted ? logoDark : logoLight}
+      alt="RailFeasto Order Hub"
+      className={cn("w-auto", compact ? "h-8" : "h-11", className)}
+      width={1265}
+      height={878}
+    />
   );
 }
