@@ -22,7 +22,8 @@ export const startGmailConnect = createServerFn({ method: "POST" })
     const g = await import("./gmail.server");
     const request = getRequest();
     const url = new URL(request.url);
-    const sandboxHost = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
+    const fwd = url.hostname === "localhost" ? (request.headers.get("x-forwarded-host") ?? "").split(",")[0].trim().toLowerCase() : "";
+    const sandboxHost = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.(lovable\.app|lovableproject\.com|lovable\.dev)$/.test(fwd) ? fwd : null;
     const returnUrl = new URL("/api/oauth/google/return", sandboxHost ? `https://${sandboxHost}` : url.origin).toString();
     const a = await admin();
     const { data: acct } = await a.from("connected_email_accounts").select("connection_key_ciphertext").eq("restaurant_id", data.restaurantId).maybeSingle();
