@@ -41,6 +41,7 @@ import { Route as AuthenticatedAppOrderSourcesIndexRouteImport } from './routes/
 import { Route as AuthenticatedAppOrderSourcesConnectRouteImport } from './routes/_authenticated/_app/order-sources.connect'
 import { Route as AuthenticatedAppOrdersIndexRouteImport } from './routes/_authenticated/_app/orders.index'
 import { Route as AuthenticatedAppOrdersIdRouteImport } from './routes/_authenticated/_app/orders.$id'
+import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
 import { Route as ApiPublicIngestSourceIdRouteImport } from './routes/api/public/ingest.$sourceId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -219,6 +220,11 @@ const AuthenticatedAppOrdersIdRoute =
     path: '/orders/$id',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiOauthGoogleReturnRoute = ApiOauthGoogleReturnRouteImport.update({
+  id: '/api/oauth/google/return',
+  path: '/api/oauth/google/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicIngestSourceIdRoute = ApiPublicIngestSourceIdRouteImport.update({
   id: '/api/public/ingest/$sourceId',
   path: '/api/public/ingest/$sourceId',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAppAdminUsersRoute
   '/order-sources/connect': typeof AuthenticatedAppOrderSourcesConnectRoute
   '/orders/$id': typeof AuthenticatedAppOrdersIdRoute
+  '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
   '/admin/': typeof AuthenticatedAppAdminIndexRoute
   '/order-sources/': typeof AuthenticatedAppOrderSourcesIndexRoute
@@ -285,6 +292,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAppAdminUsersRoute
   '/order-sources/connect': typeof AuthenticatedAppOrderSourcesConnectRoute
   '/orders/$id': typeof AuthenticatedAppOrdersIdRoute
+  '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
   '/admin': typeof AuthenticatedAppAdminIndexRoute
   '/order-sources': typeof AuthenticatedAppOrderSourcesIndexRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/admin/users': typeof AuthenticatedAppAdminUsersRoute
   '/_authenticated/_app/order-sources/connect': typeof AuthenticatedAppOrderSourcesConnectRoute
   '/_authenticated/_app/orders/$id': typeof AuthenticatedAppOrdersIdRoute
+  '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/ingest/$sourceId': typeof ApiPublicIngestSourceIdRoute
   '/_authenticated/_app/admin/': typeof AuthenticatedAppAdminIndexRoute
   '/_authenticated/_app/order-sources/': typeof AuthenticatedAppOrderSourcesIndexRoute
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/order-sources/connect'
     | '/orders/$id'
+    | '/api/oauth/google/return'
     | '/api/public/ingest/$sourceId'
     | '/admin/'
     | '/order-sources/'
@@ -388,6 +398,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/order-sources/connect'
     | '/orders/$id'
+    | '/api/oauth/google/return'
     | '/api/public/ingest/$sourceId'
     | '/admin'
     | '/order-sources'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/admin/users'
     | '/_authenticated/_app/order-sources/connect'
     | '/_authenticated/_app/orders/$id'
+    | '/api/oauth/google/return'
     | '/api/public/ingest/$sourceId'
     | '/_authenticated/_app/admin/'
     | '/_authenticated/_app/order-sources/'
@@ -436,6 +448,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  ApiOauthGoogleReturnRoute: typeof ApiOauthGoogleReturnRoute
   ApiPublicIngestSourceIdRoute: typeof ApiPublicIngestSourceIdRoute
 }
 
@@ -665,6 +678,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppOrdersIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/oauth/google/return': {
+      id: '/api/oauth/google/return'
+      path: '/api/oauth/google/return'
+      fullPath: '/api/oauth/google/return'
+      preLoaderRoute: typeof ApiOauthGoogleReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ingest/$sourceId': {
       id: '/api/public/ingest/$sourceId'
       path: '/api/public/ingest/$sourceId'
@@ -766,6 +786,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  ApiOauthGoogleReturnRoute: ApiOauthGoogleReturnRoute,
   ApiPublicIngestSourceIdRoute: ApiPublicIngestSourceIdRoute,
 }
 export const routeTree = rootRouteImport

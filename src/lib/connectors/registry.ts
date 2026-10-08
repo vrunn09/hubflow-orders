@@ -109,6 +109,12 @@ export const CONNECTORS: ConnectorDefinition[] = [
     normalize: normalizeEmail, mockPayload: mockEmail,
   },
   {
+    key: "gmail_api", name: "Gmail (Connect with Google)", description: "Owner signs in with Google and allows read-only Gmail access; food order emails are detected automatically.",
+    methods: ["oauth"], productionReady: true, aiFallback: true,
+    productionNote: "Official Google sign-in. Read-only access, no password shared.",
+    normalize: normalizeEmail, mockPayload: mockEmail,
+  },
+  {
     key: "zomato", name: "Zomato", description: "Orders from Zomato for Business.",
     methods: ["webhook", "api_key"], productionReady: false,
     productionNote: "Requires official partner API access granted by Zomato. Until then, use test mode.",
