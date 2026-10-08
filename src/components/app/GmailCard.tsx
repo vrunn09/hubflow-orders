@@ -50,7 +50,7 @@ export function GmailCard() {
 
   const connect = async () => {
     const popup = window.open("", "gmail-oauth", "width=520,height=680");
-    if (!popup) return toast.error("Popup blocked — please allow popups and try again.");
+    if (!popup) { toast.error("Popup blocked — please allow popups and try again."); return; }
     setBusy("connect");
     try {
       const { authorizationUrl } = await start({ data: { restaurantId } });
