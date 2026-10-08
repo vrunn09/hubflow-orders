@@ -20,7 +20,10 @@ export const Route = createFileRoute("/api/oauth/google/return")({
         const html = `<!DOCTYPE html><html><head><title>Finishing connection…</title></head><body style="font-family:sans-serif;padding:24px">
 <p>${result.success ? "Gmail connected, closing…" : "Failed: " + esc(("error" in result && result.error) || "Unknown error")}</p>
 <script>const r=${safeJson};const m={type:r.success?"appUserConnectorOAuthComplete":"appUserConnectorOAuthFailed",connectorId:r.connectorId,code:r.code??null,error:r.error??null};
-if(window.opener&&window.opener!==window){window.opener.postMessage(m,window.location.origin);}window.close();</script></body></html>`;
+try{localStorage.setItem("gmail_oauth_result",JSON.stringify(Object.assign({ts:Date.now()},m)));}catch(e){}
+var hasOpener=false;try{hasOpener=!!(window.opener&&window.opener!==window);}catch(e){}
+if(hasOpener){try{window.opener.postMessage(m,window.location.origin);}catch(e){}setTimeout(function(){window.close();},300);}
+setTimeout(function(){if(!window.closed){window.location.replace("/order-sources");}},1200);</script></body></html>`;
         return new Response(html, { headers: { "Content-Type": "text/html" } });
       },
     },

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,19 +8,57 @@ import { useTenant } from "@/lib/tenant";
 import { completeGmailConnect, disconnectGmail, gmailStatus, ignoreImportedEmail, startGmailConnect, syncGmailNow } from "@/lib/gmail.functions";
 import { Button } from "@/components/ui/button";
 
+const RESULT_KEY = "gmail_oauth_result";
+type OAuthResult = { type?: string; connectorId?: string; code?: string | null; error?: string | null; ts?: number };
+
+// Reads (and consumes) a result the Google return page saved — works even when the popup lost its link to this window (mobile tabs).
+function takeStoredResult(): OAuthResult | null {
+  try {
+    const raw = localStorage.getItem(RESULT_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(RESULT_KEY);
+    const r = JSON.parse(raw) as OAuthResult;
+    if (r.connectorId !== "google_mail" || !r.ts || Date.now() - r.ts > 10 * 60_000) return null;
+    return r;
+  } catch { return null; }
+}
+
+function resultToCode(r: OAuthResult): string | null {
+  if (r.type === "appUserConnectorOAuthComplete") return typeof r.code === "string" ? r.code : null;
+  throw new Error(r.error ? `Google permission failed: ${r.error}` : "Google permission was not granted.");
+}
+
 function waitForCode(popup: Window) {
   return new Promise<string | null>((resolve, reject) => {
-    const cleanup = () => { window.removeEventListener("message", onMsg); clearInterval(poll); };
+    let done = false;
+    const finish = (r: OAuthResult) => {
+      if (done) return; done = true; cleanup();
+      try { resolve(resultToCode(r)); } catch (e) { reject(e); }
+    };
+    const cleanup = () => { window.removeEventListener("message", onMsg); window.removeEventListener("storage", onStorage); clearInterval(poll); };
     const onMsg = (e: MessageEvent) => {
       const t = e.data?.type;
-      if (e.origin !== window.location.origin || e.source !== popup || e.data?.connectorId !== "google_mail") return;
+      if (e.origin !== window.location.origin || e.data?.connectorId !== "google_mail") return;
       if (t !== "appUserConnectorOAuthComplete" && t !== "appUserConnectorOAuthFailed") return;
-      cleanup();
-      if (t === "appUserConnectorOAuthComplete") resolve(typeof e.data.code === "string" ? e.data.code : null);
-      else reject(new Error(e.data?.error ? `Google permission failed: ${e.data.error}` : "Google permission was not granted."));
+      try { localStorage.removeItem(RESULT_KEY); } catch { /* ignore */ }
+      finish(e.data as OAuthResult);
     };
+    const onStorage = (e: StorageEvent) => { if (e.key === RESULT_KEY && e.newValue) { const r = takeStoredResult(); if (r) finish(r); } };
     window.addEventListener("message", onMsg);
-    const poll = window.setInterval(() => { if (popup.closed) { cleanup(); reject(new Error("Google window closed before permission was given.")); } }, 500);
+    window.addEventListener("storage", onStorage);
+    const poll = window.setInterval(() => {
+      const r = takeStoredResult();
+      if (r) return finish(r);
+      if (popup.closed) {
+        // Give the return page a moment to save its result before giving up.
+        setTimeout(() => {
+          const late = takeStoredResult();
+          if (late) finish(late);
+          else if (!done) { done = true; cleanup(); reject(new Error("Google window closed before permission was given.")); }
+        }, 1500);
+        clearInterval(poll);
+      }
+    }, 500);
   });
 }
 
@@ -48,7 +86,28 @@ export function GmailCard() {
   });
   const refresh = () => { qc.invalidateQueries({ queryKey: ["gmail"] }); qc.invalidateQueries({ queryKey: ["gmail-review"] }); qc.invalidateQueries({ queryKey: ["sources"] }); };
 
+  // Finish a Google sign-in that came back to this page directly (phones often open Google in a new tab).
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (!restaurantId || resumed.current) return;
+    resumed.current = true;
+    const r = takeStoredResult();
+    if (!r) return;
+    (async () => {
+      setBusy("connect");
+      try {
+        const code = resultToCode(r);
+        if (code) { const res = await complete({ data: { restaurantId, code } }); toast.success(`Gmail connected: ${res.email ?? ""}`); }
+        refresh();
+        sync({ data: { restaurantId } }).then(refresh).catch(() => {});
+      } catch (e) { toast.error(e instanceof Error ? e.message : "Could not connect Gmail"); }
+      setBusy(null);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurantId]);
+
   const connect = async () => {
+    takeStoredResult();
     const popup = window.open("", "gmail-oauth", "width=520,height=680");
     if (!popup) { toast.error("Popup blocked — please allow popups and try again."); return; }
     setBusy("connect");
