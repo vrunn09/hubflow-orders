@@ -54,8 +54,8 @@ function Menu() {
 
   async function submit() {
     const price = Number(form.price);
-    if (form.name.trim().length < 2) return toast.error("Item name chhota hai");
-    if (!Number.isFinite(price) || price < 0) return toast.error("Price sahi daaliye");
+    if (form.name.trim().length < 2) { toast.error("Item name chhota hai"); return; }
+    if (!Number.isFinite(price) || price < 0) { toast.error("Price sahi daaliye"); return; }
     setBusy(true);
     try {
       await save({ data: { restaurantId, ...(form.id ? { itemId: form.id } : {}), name: form.name.trim(), category: form.category.trim() || undefined, price, available: form.available, notes: form.notes.trim() || undefined } });

@@ -30,8 +30,8 @@ function ItemReports() {
     queryFn: async () => {
       const since = new Date(); since.setHours(0, 0, 0, 0); since.setDate(since.getDate() - (Number(days) - 1));
       const { data, error } = await supabase.from("order_items")
-        .select("name, quantity, unit_price, created_at, orders(id, status, source_key, source_platform)")
-        .eq("restaurant_id", restaurantId).gte("created_at", since.toISOString()).limit(20000);
+        .select("name, quantity, unit_price, orders(id, status, source_key, source_platform, created_at)")
+        .eq("restaurant_id", restaurantId).gte("orders.created_at", since.toISOString()).limit(20000);
       if (error) throw error;
       return data ?? [];
     },
@@ -41,14 +41,14 @@ function ItemReports() {
   const rows = useMemo<Row[]>(() => {
     const m = new Map<string, Row>();
     for (const line of q.data ?? []) {
-      const o = line.orders as { status: string; source_key: string; source_platform: string | null } | null;
+      const o = line.orders as { status: string; source_key: string; source_platform: string | null; created_at: string } | null;
       if (!o || ["CANCELLED", "FAILED", "REFUNDED"].includes(o.status)) continue;
       const name = line.name.trim().toUpperCase();
       const r = m.get(name) ?? { item: name, qty: 0, orders: 0, revenue: 0, avg: 0, last: "", platforms: "" };
       r.qty += line.quantity;
       r.orders += 1;
       r.revenue += line.quantity * Number(line.unit_price);
-      if (line.created_at > r.last) r.last = line.created_at;
+      if (o.created_at > r.last) r.last = o.created_at;
       const plat = (o.source_platform ?? o.source_key ?? "other").toLowerCase();
       if (!r.platforms.includes(plat)) r.platforms += (r.platforms ? ", " : "") + plat;
       m.set(name, r);

@@ -36,7 +36,7 @@ function Reconcile() {
       const since = new Date(); since.setHours(0, 0, 0, 0); since.setDate(since.getDate() - (Number(days) - 1));
       const [orders, payments, refunds, settlements] = await Promise.all([
         supabase.from("orders").select("id, order_number, source_key, source_platform, total, subtotal, discount, status, payment_method, payment_status, created_at").eq("restaurant_id", restaurantId).gte("created_at", since.toISOString()).limit(2000),
-        supabase.from("payments").select("order_id, amount, status, mode").eq("restaurant_id", restaurantId).gte("created_at", since.toISOString()).limit(2000),
+        supabase.from("payments").select("order_id, amount, status, mode, method").eq("restaurant_id", restaurantId).gte("created_at", since.toISOString()).limit(2000),
         supabase.from("refunds").select("order_id, amount").eq("restaurant_id", restaurantId).gte("created_at", since.toISOString()).limit(2000),
         supabase.from("settlements").select("*").eq("restaurant_id", restaurantId).order("created_at", { ascending: false }).limit(200),
       ]);
