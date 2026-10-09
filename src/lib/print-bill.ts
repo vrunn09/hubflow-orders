@@ -106,10 +106,5 @@ export async function printOrderBill(orderId: string) {
   ${mail ? `<hr><div class="s">Received via email from ${esc(mail.sender)}<br>${esc(mail.subject)}<br>${esc(dt(mail.received_at))}</div>` : ""}
   <hr><div class="c">Thank you! Happy journey</div><div class="c s">Printed ${esc(dt(new Date().toISOString()))} · RailFeasto Order Hub</div>
   </body></html>`;
-  const f = document.createElement("iframe");
-  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
-  document.body.appendChild(f);
-  const d = f.contentWindow!.document;
-  d.open(); d.write(html); d.close();
-  setTimeout(() => { f.contentWindow!.focus(); f.contentWindow!.print(); setTimeout(() => f.remove(), 60_000); }, 300);
+  printHtml(html);
 }

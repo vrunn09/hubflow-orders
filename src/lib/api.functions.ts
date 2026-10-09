@@ -346,6 +346,60 @@ export const runSettlement = createServerFn({ method: "POST" })
     return { rows: rows.length };
   });
 
+/* ---------------- Menu ---------------- */
+
+export const saveMenuItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    restaurantId: uuid,
+    itemId: uuid.optional(),
+    name: z.string().trim().min(2).max(120),
+    category: z.string().trim().max(60).optional(),
+    price: z.number().min(0).max(100000),
+    available: z.boolean().default(true),
+    notes: z.string().trim().max(300).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireRole(context, data.restaurantId, ["owner", "manager"]);
+    const a = await admin();
+    const row = {
+      restaurant_id: data.restaurantId, name: data.name, category: data.category || null,
+      price: data.price, available: data.available, notes: data.notes || null, updated_at: new Date().toISOString(),
+    };
+    const { data: item, error } = data.itemId
+      ? await a.from("menu_items").update(row).eq("id", data.itemId).eq("restaurant_id", data.restaurantId).select("id").single()
+      : await a.from("menu_items").insert(row).select("id").single();
+    if (error) throw new Error(error.code === "23505" ? "An item with this name already exists" : error.message);
+    await audit(data.restaurantId, context.userId, data.itemId ? "menu.updated" : "menu.created", "menu_item", item.id, { name: data.name });
+    return { id: item.id };
+  });
+
+export const setMenuItemAvailable = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ itemId: uuid, available: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const a = await admin();
+    const { data: item } = await a.from("menu_items").select("id,restaurant_id,name").eq("id", data.itemId).single();
+    if (!item) throw new Error("Item not found");
+    await requireRole(context, item.restaurant_id, ["owner", "manager"]);
+    await a.from("menu_items").update({ available: data.available, updated_at: new Date().toISOString() }).eq("id", item.id);
+    await audit(item.restaurant_id, context.userId, data.available ? "menu.available" : "menu.unavailable", "menu_item", item.id, { name: item.name });
+    return { ok: true };
+  });
+
+export const deleteMenuItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ itemId: uuid }).parse(d))
+  .handler(async ({ data, context }) => {
+    const a = await admin();
+    const { data: item } = await a.from("menu_items").select("id,restaurant_id,name").eq("id", data.itemId).single();
+    if (!item) throw new Error("Item not found");
+    await requireRole(context, item.restaurant_id, ["owner"]);
+    await a.from("menu_items").delete().eq("id", item.id);
+    await audit(item.restaurant_id, context.userId, "menu.deleted", "menu_item", item.id, { name: item.name });
+    return { ok: true };
+  });
+
 /* ---------------- Staff ---------------- */
 
 export const inviteStaff = createServerFn({ method: "POST" })
