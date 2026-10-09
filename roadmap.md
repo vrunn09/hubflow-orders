@@ -19,6 +19,6 @@
 - [x] Needs Review page; source status-update emails linked to existing orders
 - [x] Orders table in MIG MAYO style (expand row, items, amount to collect, print, pagination)
 - [x] Delivery Executives table with daily COD stats
-- [ ] Dashboard summary restyle per reference
-- [ ] KOT print/reprint + timers, Delivery exec COD table
-- [ ] COD ledger, reconciliation, item reports, menu management
+- [x] Dashboard summary restyle per reference
+- [x] KOT print/reprint + timers, Delivery exec COD table
+- [x] COD ledger, reconciliation, item reports, menu management
