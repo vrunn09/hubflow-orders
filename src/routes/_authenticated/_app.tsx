@@ -109,7 +109,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
     const active = it.status !== undefined ? loc.pathname === it.to && curStatus === it.status : onPath;
     const badge = it.badge ? counts.data?.[it.badge] : 0;
     return (
-      <Link key={it.label} to={it.to} search={it.status !== undefined ? { status: it.status || undefined } : undefined} onClick={onNavigate}
+      <Link key={it.label} to={it.to} search={(it.status !== undefined ? { status: it.status || undefined } : {}) as never} onClick={onNavigate}
         className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
           active ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground")}>
         <it.icon className={cn("size-4", active && "text-saffron")} /><span className="flex-1 truncate">{it.label}</span>
