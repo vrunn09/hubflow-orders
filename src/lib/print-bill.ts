@@ -13,7 +13,7 @@ export async function printOrderBill(orderId: string) {
   if (error || !o) throw new Error(error?.message ?? "Order not found");
   const [{ data: r }, { data: mail }] = await Promise.all([
     supabase.from("restaurants").select("name, address, phone, email, gstin").eq("id", o.restaurant_id).maybeSingle(),
-    supabase.from("imported_emails").select("sender, subject, received_at").eq("order_id", o.id).maybeSingle(),
+    supabase.from("imported_emails").select("sender, subject, received_at").eq("order_id", o.id).eq("processing_status", "imported").maybeSingle(),
   ]);
   const esc = (v: unknown) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
   const rs = (n: number) => "₹" + Number(n || 0).toFixed(2);

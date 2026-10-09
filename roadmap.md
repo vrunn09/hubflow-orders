@@ -15,3 +15,8 @@
 - [ ] Commission rates — on hold by owner
 - [ ] Real Gmail order email end-to-end test — blocked: needs owner's live test
 - [ ] Not building: automated logins into merchant panels (platform terms, CAPTCHA/OTP)
+- [x] Sidebar regrouped (Inbox, status-wise orders, Needs Review with badges)
+- [x] Needs Review page; source status-update emails linked to existing orders
+- [ ] Dashboard upgrade per MIG MAYO reference — waiting for screenshots
+- [ ] KOT print/reprint + timers, Delivery exec COD table
+- [ ] COD ledger, reconciliation, item reports, menu management

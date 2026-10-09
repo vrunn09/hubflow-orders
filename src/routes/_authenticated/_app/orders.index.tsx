@@ -35,7 +35,7 @@ function Orders() {
   const status = sp.status ?? "";
 
   const rows = useMemo(() => (q.data ?? []).filter((o) => {
-    if (status && o.status !== status) return false;
+    if (status && !status.split(",").includes(o.status)) return false;
     if (f.source && o.source_key !== f.source) return false;
     if (f.payment && o.payment_status !== f.payment) return false;
     if (f.station && o.delivery_station !== f.station) return false;
@@ -50,7 +50,7 @@ function Orders() {
     return true;
   }), [q.data, status, f, term]);
   const stations = [...new Set((q.data ?? []).map((o) => o.delivery_station).filter(Boolean))] as string[];
-  const counts = (s: string) => (q.data ?? []).filter((o) => !s || o.status === s).length;
+  const counts = (s: string) => (q.data ?? []).filter((o) => !s || s.split(",").includes(o.status)).length;
 
   return (
     <div>
