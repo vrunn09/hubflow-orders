@@ -130,7 +130,7 @@ function Orders() {
                         <td className="px-2 py-2"><Link to="/orders/$id" params={{ id: o.id }} className="font-mono font-semibold hover:text-saffron">{o.external_order_id}</Link><div className="text-[10px] text-muted-foreground">{o.order_number}</div></td>
                         <td className="px-2 py-2 font-semibold text-saffron">{platformName(o.source_platform ?? o.source_key)}</td>
                         <td className="tabular px-2 py-2">{o.deliver_by ? new Date(o.deliver_by).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : <span className="text-muted-foreground">Not provided</span>}</td>
-                        <td className="px-2 py-2"><span className={cn("rounded px-2 py-0.5 text-[10px] font-bold", cod ? "bg-primary text-primary-foreground" : "bg-success text-success-foreground")}>{o.payment_method.toUpperCase()}</span></td>
+                        <td className="px-2 py-2"><span className={cn("rounded px-2 py-0.5 text-[10px] font-bold", cod ? "bg-primary text-primary-foreground" : "bg-success text-primary-foreground")}>{o.payment_method.toUpperCase()}</span></td>
                         <td className="tabular px-2 py-2">{o.customer_phone ?? "—"}</td>
                         <td className="px-2 py-2">{o.train_number ? <>{o.train_number} {o.train_name ?? ""} · <b className="text-destructive">{o.coach ?? "—"}/{o.seat ?? "—"}</b> · <span className="rounded border border-info px-1 text-info">{o.delivery_station ?? "—"}</span></> : "—"}</td>
                         <td className="tabular px-2 py-2 text-right font-bold">{formatINR(o.total)}</td>
