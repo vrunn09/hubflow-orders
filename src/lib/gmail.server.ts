@@ -118,6 +118,18 @@ export async function syncGmailForRestaurant(admin: Admin, restaurantId: string)
       const senderDomain = sender.match(/@([^>\s]+)/)?.[1]?.toLowerCase() ?? null;
       const body = extractText(msg.payload ?? {}).slice(0, 20000);
       const platform = detectPlatform(sender, subject);
+      // Status-update emails (Delivered / Delivery time passed / Cancelled) refer to an existing order — never a new one.
+      if (/delivered|delivery time passed|cancel|undeliver|refund/i.test(subject) && !/new (irctc )?order/i.test(subject)) {
+        const ref = subject.match(/#\s*([A-Z0-9]{5,})/i)?.[1];
+        const { data: linked } = ref ? await admin.from("orders").select("id").eq("restaurant_id", restaurantId).eq("external_order_id", ref).maybeSingle() : { data: null };
+        await admin.from("imported_emails").insert({
+          restaurant_id: restaurantId, gmail_message_id: id, thread_id: msg.threadId ?? null, sender: sender.slice(0, 300), sender_domain: senderDomain,
+          subject: subject.slice(0, 500), received_at: msg.internalDate ? new Date(Number(msg.internalDate)).toISOString() : null, platform,
+          classification: "status_update", confidence: 1, snippet: (msg.snippet ?? "").slice(0, 300), processed_at: new Date().toISOString(),
+          processing_status: "status_update", order_id: linked?.id ?? null,
+        });
+        r.skipped++; continue;
+      }
       const { classification, confidence } = classifyEmail(`${subject}\n${body}`, platform);
       const base = {
         restaurant_id: restaurantId, gmail_message_id: id, thread_id: msg.threadId ?? null, sender: sender.slice(0, 300),

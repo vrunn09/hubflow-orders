@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   BarChart3, Bell, Bike, ChefHat, ClipboardList, FileText, HelpCircle, LayoutDashboard, LogOut, Menu, Plug,
-  Receipt, Settings, Shield, Truck, User, Users, Wallet,
+  Receipt, Settings, Shield, Truck, User, Users, Wallet, Inbox, AlertTriangle, Activity, CheckCircle2, PackageCheck, XCircle, Ban,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { claimInvites, retryFailedJobs } from "@/lib/api.functions";
@@ -29,29 +29,41 @@ function AppLoading() {
   );
 }
 
-type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; roles: Role[] };
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; roles: Role[]; status?: string; badge?: "new" | "review" };
 const ALL: Role[] = ["owner", "manager", "kitchen", "delivery"];
+const MGR: Role[] = ["owner", "manager"];
 const NAV: { group: string; items: NavItem[] }[] = [
   { group: "Operations", items: [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["owner", "manager"] },
-    { to: "/orders", label: "Orders", icon: ClipboardList, roles: ["owner", "manager"] },
-    { to: "/kitchen", label: "Kitchen", icon: ChefHat, roles: ["owner", "manager", "kitchen"] },
-    { to: "/delivery", label: "Delivery", icon: Truck, roles: ["owner", "manager", "delivery"] },
-    { to: "/delivery-partners", label: "Delivery partners", icon: Bike, roles: ["owner", "manager"] },
-    { to: "/order-sources", label: "Order sources", icon: Plug, roles: ["owner", "manager"] },
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: MGR },
+    { to: "/orders", label: "Live Order Inbox", icon: Inbox, roles: MGR, status: "NEW", badge: "new" },
+    { to: "/needs-review", label: "Needs Review", icon: AlertTriangle, roles: MGR, badge: "review" },
+    { to: "/kitchen", label: "Kitchen / KOT", icon: ChefHat, roles: ["owner", "manager", "kitchen"] },
   ] },
-  { group: "Finance", items: [
-    { to: "/payments", label: "Payments", icon: Wallet, roles: ["owner", "manager"] },
-    { to: "/settlements", label: "Settlements", icon: Receipt, roles: ["owner", "manager"] },
-    { to: "/analytics", label: "Analytics", icon: BarChart3, roles: ["owner", "manager"] },
-    { to: "/reports", label: "Reports", icon: FileText, roles: ["owner", "manager"] },
+  { group: "Orders", items: [
+    { to: "/orders", label: "All Orders", icon: ClipboardList, roles: MGR, status: "" },
+    { to: "/orders", label: "Active Orders", icon: Activity, roles: MGR, status: "ACCEPTED,PREPARING,READY,ASSIGNED,OUT_FOR_DELIVERY" },
+    { to: "/orders", label: "Confirmed Orders", icon: CheckCircle2, roles: MGR, status: "ACCEPTED" },
+    { to: "/orders", label: "Delivered Orders", icon: PackageCheck, roles: MGR, status: "DELIVERED" },
+    { to: "/orders", label: "Cancelled Orders", icon: XCircle, roles: MGR, status: "CANCELLED,REFUNDED" },
+    { to: "/orders", label: "Undelivered / Failed", icon: Ban, roles: MGR, status: "FAILED" },
+  ] },
+  { group: "Delivery", items: [
+    { to: "/delivery", label: "Delivery Board", icon: Truck, roles: ["owner", "manager", "delivery"] },
+    { to: "/delivery-partners", label: "Delivery Executives", icon: Bike, roles: MGR },
+  ] },
+  { group: "Finance & Reports", items: [
+    { to: "/payments", label: "Payments & COD", icon: Wallet, roles: MGR },
+    { to: "/settlements", label: "Reconciliation", icon: Receipt, roles: MGR },
+    { to: "/analytics", label: "Daily Business", icon: BarChart3, roles: MGR },
+    { to: "/reports", label: "Reports", icon: FileText, roles: MGR },
   ] },
   { group: "Workspace", items: [
+    { to: "/order-sources", label: "Platform Connections", icon: Plug, roles: MGR },
     { to: "/notifications", label: "Notifications", icon: Bell, roles: ALL },
-    { to: "/staff", label: "Staff", icon: Users, roles: ["owner"] },
+    { to: "/staff", label: "Team & Permissions", icon: Users, roles: ["owner"] },
     { to: "/settings", label: "Settings", icon: Settings, roles: ["owner"] },
     { to: "/profile", label: "Profile", icon: User, roles: ALL },
-    { to: "/help", label: "Help", icon: HelpCircle, roles: ALL },
+    { to: "/help", label: "Help & Support", icon: HelpCircle, roles: ALL },
   ] },
 ];
 
@@ -79,26 +91,40 @@ function AppLayout() {
 }
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
-  const { can, isPlatformAdmin } = useTenant();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { can, isPlatformAdmin, restaurantId } = useTenant();
+  const loc = useRouterState({ select: (s) => s.location });
+  const curStatus = String((loc.search as { status?: string }).status ?? "");
+  const counts = useQuery({
+    queryKey: ["nav-counts", restaurantId], enabled: !!restaurantId && can("owner", "manager"), refetchInterval: 30_000,
+    queryFn: async () => {
+      const [n, r] = await Promise.all([
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("restaurant_id", restaurantId).eq("status", "NEW"),
+        supabase.from("imported_emails").select("id", { count: "exact", head: true }).eq("restaurant_id", restaurantId).eq("processing_status", "needs_review"),
+      ]);
+      return { new: n.count ?? 0, review: r.count ?? 0 };
+    },
+  });
   const item = (it: NavItem) => {
-    const active = path === it.to || path.startsWith(it.to + "/");
+    const onPath = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
+    const active = it.status !== undefined ? loc.pathname === it.to && curStatus === it.status : onPath;
+    const badge = it.badge ? counts.data?.[it.badge] : 0;
     return (
-      <Link key={it.to} to={it.to} onClick={onNavigate}
+      <Link key={it.label} to={it.to} search={it.status !== undefined ? { status: it.status || undefined } : undefined} onClick={onNavigate}
         className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
           active ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground")}>
-        <it.icon className={cn("size-4", active && "text-saffron")} />{it.label}
+        <it.icon className={cn("size-4", active && "text-saffron")} /><span className="flex-1 truncate">{it.label}</span>
+        {!!badge && <span className="rounded-full bg-saffron px-1.5 text-[10px] font-bold text-saffron-foreground">{badge > 99 ? "99+" : badge}</span>}
       </Link>
     );
   };
   return (
-    <nav className="space-y-5">
+    <nav className="space-y-4">
       {NAV.map((g) => {
         const items = g.items.filter((i) => can(...i.roles));
         if (!items.length) return null;
-        return <div key={g.group}><div className="mb-1.5 px-2.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">{g.group}</div><div className="space-y-0.5">{items.map(item)}</div></div>;
+        return <div key={g.group}><div className="mb-1 px-2.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">{g.group}</div><div className="space-y-0.5">{items.map(item)}</div></div>;
       })}
-      {isPlatformAdmin && <div><div className="mb-1.5 px-2.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">Platform</div>{item({ to: "/admin", label: "Admin panel", icon: Shield, roles: ALL })}</div>}
+      {isPlatformAdmin && <div><div className="mb-1 px-2.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">Platform</div>{item({ to: "/admin", label: "Admin panel", icon: Shield, roles: ALL })}</div>}
     </nav>
   );
 }
