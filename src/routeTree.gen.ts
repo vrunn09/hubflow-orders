@@ -25,7 +25,9 @@ import { Route as AuthenticatedAppDashboardRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppDeliveryRouteImport } from './routes/_authenticated/_app/delivery'
 import { Route as AuthenticatedAppDeliveryPartnersRouteImport } from './routes/_authenticated/_app/delivery-partners'
 import { Route as AuthenticatedAppHelpRouteImport } from './routes/_authenticated/_app/help'
+import { Route as AuthenticatedAppItemReportsRouteImport } from './routes/_authenticated/_app/item-reports'
 import { Route as AuthenticatedAppKitchenRouteImport } from './routes/_authenticated/_app/kitchen'
+import { Route as AuthenticatedAppMenuRouteImport } from './routes/_authenticated/_app/menu'
 import { Route as AuthenticatedAppNeedsReviewRouteImport } from './routes/_authenticated/_app/needs-review'
 import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/_app/notifications'
 import { Route as AuthenticatedAppPaymentsRouteImport } from './routes/_authenticated/_app/payments'
@@ -129,9 +131,20 @@ const AuthenticatedAppHelpRoute = AuthenticatedAppHelpRouteImport.update({
   path: '/help',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppItemReportsRoute =
+  AuthenticatedAppItemReportsRouteImport.update({
+    id: '/item-reports',
+    path: '/item-reports',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppKitchenRoute = AuthenticatedAppKitchenRouteImport.update({
   id: '/kitchen',
   path: '/kitchen',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppMenuRoute = AuthenticatedAppMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppNeedsReviewRoute =
@@ -265,7 +278,9 @@ export interface FileRoutesByFullPath {
   '/delivery': typeof AuthenticatedAppDeliveryRoute
   '/delivery-partners': typeof AuthenticatedAppDeliveryPartnersRoute
   '/help': typeof AuthenticatedAppHelpRoute
+  '/item-reports': typeof AuthenticatedAppItemReportsRoute
   '/kitchen': typeof AuthenticatedAppKitchenRoute
+  '/menu': typeof AuthenticatedAppMenuRoute
   '/needs-review': typeof AuthenticatedAppNeedsReviewRoute
   '/notifications': typeof AuthenticatedAppNotificationsRoute
   '/payments': typeof AuthenticatedAppPaymentsRoute
@@ -301,7 +316,9 @@ export interface FileRoutesByTo {
   '/delivery': typeof AuthenticatedAppDeliveryRoute
   '/delivery-partners': typeof AuthenticatedAppDeliveryPartnersRoute
   '/help': typeof AuthenticatedAppHelpRoute
+  '/item-reports': typeof AuthenticatedAppItemReportsRoute
   '/kitchen': typeof AuthenticatedAppKitchenRoute
+  '/menu': typeof AuthenticatedAppMenuRoute
   '/needs-review': typeof AuthenticatedAppNeedsReviewRoute
   '/notifications': typeof AuthenticatedAppNotificationsRoute
   '/payments': typeof AuthenticatedAppPaymentsRoute
@@ -341,7 +358,9 @@ export interface FileRoutesById {
   '/_authenticated/_app/delivery': typeof AuthenticatedAppDeliveryRoute
   '/_authenticated/_app/delivery-partners': typeof AuthenticatedAppDeliveryPartnersRoute
   '/_authenticated/_app/help': typeof AuthenticatedAppHelpRoute
+  '/_authenticated/_app/item-reports': typeof AuthenticatedAppItemReportsRoute
   '/_authenticated/_app/kitchen': typeof AuthenticatedAppKitchenRoute
+  '/_authenticated/_app/menu': typeof AuthenticatedAppMenuRoute
   '/_authenticated/_app/needs-review': typeof AuthenticatedAppNeedsReviewRoute
   '/_authenticated/_app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/_authenticated/_app/payments': typeof AuthenticatedAppPaymentsRoute
@@ -380,7 +399,9 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/delivery-partners'
     | '/help'
+    | '/item-reports'
     | '/kitchen'
+    | '/menu'
     | '/needs-review'
     | '/notifications'
     | '/payments'
@@ -416,7 +437,9 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/delivery-partners'
     | '/help'
+    | '/item-reports'
     | '/kitchen'
+    | '/menu'
     | '/needs-review'
     | '/notifications'
     | '/payments'
@@ -455,7 +478,9 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/delivery'
     | '/_authenticated/_app/delivery-partners'
     | '/_authenticated/_app/help'
+    | '/_authenticated/_app/item-reports'
     | '/_authenticated/_app/kitchen'
+    | '/_authenticated/_app/menu'
     | '/_authenticated/_app/needs-review'
     | '/_authenticated/_app/notifications'
     | '/_authenticated/_app/payments'
@@ -605,11 +630,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppHelpRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/item-reports': {
+      id: '/_authenticated/_app/item-reports'
+      path: '/item-reports'
+      fullPath: '/item-reports'
+      preLoaderRoute: typeof AuthenticatedAppItemReportsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/kitchen': {
       id: '/_authenticated/_app/kitchen'
       path: '/kitchen'
       fullPath: '/kitchen'
       preLoaderRoute: typeof AuthenticatedAppKitchenRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/menu': {
+      id: '/_authenticated/_app/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof AuthenticatedAppMenuRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/needs-review': {
@@ -786,7 +825,9 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDeliveryRoute: typeof AuthenticatedAppDeliveryRoute
   AuthenticatedAppDeliveryPartnersRoute: typeof AuthenticatedAppDeliveryPartnersRoute
   AuthenticatedAppHelpRoute: typeof AuthenticatedAppHelpRoute
+  AuthenticatedAppItemReportsRoute: typeof AuthenticatedAppItemReportsRoute
   AuthenticatedAppKitchenRoute: typeof AuthenticatedAppKitchenRoute
+  AuthenticatedAppMenuRoute: typeof AuthenticatedAppMenuRoute
   AuthenticatedAppNeedsReviewRoute: typeof AuthenticatedAppNeedsReviewRoute
   AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
   AuthenticatedAppPaymentsRoute: typeof AuthenticatedAppPaymentsRoute
@@ -808,7 +849,9 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDeliveryRoute: AuthenticatedAppDeliveryRoute,
   AuthenticatedAppDeliveryPartnersRoute: AuthenticatedAppDeliveryPartnersRoute,
   AuthenticatedAppHelpRoute: AuthenticatedAppHelpRoute,
+  AuthenticatedAppItemReportsRoute: AuthenticatedAppItemReportsRoute,
   AuthenticatedAppKitchenRoute: AuthenticatedAppKitchenRoute,
+  AuthenticatedAppMenuRoute: AuthenticatedAppMenuRoute,
   AuthenticatedAppNeedsReviewRoute: AuthenticatedAppNeedsReviewRoute,
   AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
   AuthenticatedAppPaymentsRoute: AuthenticatedAppPaymentsRoute,
