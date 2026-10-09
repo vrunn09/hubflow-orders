@@ -27,7 +27,7 @@ function OrderDetail() {
   const { restaurantId, role, can } = useTenant();
   const [auto, setAuto] = useState(false);
   useEffect(() => setAuto(isAutoPrint()), []);
-  const mail = useQuery({ queryKey: ["order-mail", id], queryFn: async () => (await supabase.from("imported_emails").select("sender, subject, received_at, gmail_message_id").eq("order_id", id).maybeSingle()).data });
+  const mail = useQuery({ queryKey: ["order-mail", id], queryFn: async () => (await supabase.from("imported_emails").select("sender, subject, received_at, gmail_message_id").eq("order_id", id).eq("processing_status", "imported").maybeSingle()).data });
   const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["order", id],
