@@ -98,7 +98,9 @@ export async function syncGmailForRestaurant(admin: Admin, restaurantId: string)
     throw new Error(`Gmail API error ${res.status}`);
   };
 
-  const list = await call(`/gmail/v1/users/me/messages?maxResults=25&q=${encodeURIComponent(SEARCH)}`);
+  // Only emails that arrived after this Gmail was connected — never import older orders.
+  const since = Math.floor(new Date(acct.created_at).getTime() / 1000);
+  const list = await call(`/gmail/v1/users/me/messages?maxResults=25&q=${encodeURIComponent(`${SEARCH} after:${since}`)}`);
   if (!list.ok) { if (await fail(list)) return { checked: 0, imported: 0, needsReview: 0, skipped: 0, duplicates: 0, reconnectRequired: true }; }
   const ids: string[] = ((await list.json()).messages ?? []).map((m: { id: string }) => m.id);
   const r: SyncResult = { checked: 0, imported: 0, needsReview: 0, skipped: 0, duplicates: 0 };
@@ -109,6 +111,7 @@ export async function syncGmailForRestaurant(admin: Admin, restaurantId: string)
       const res = await call(`/gmail/v1/users/me/messages/${id}?format=full`);
       if (!res.ok) { if (await fail(res)) { r.reconnectRequired = true; break; } continue; }
       const msg = await res.json();
+      if (msg.internalDate && Number(msg.internalDate) < new Date(acct.created_at).getTime()) continue;
       r.checked++;
       const h = (n: string) => (msg.payload?.headers ?? []).find((x: { name: string }) => x.name.toLowerCase() === n)?.value ?? "";
       const sender = h("from"); const subject = h("subject");
