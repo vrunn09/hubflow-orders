@@ -18,3 +18,4 @@
 - Webhook secrets are shown once and only their SHA-256 hash is stored; third-party passwords are never collected. Why: no plaintext credentials.
 - Test-mode (mock) sources are labelled with `environment = 'mock'`. Why: keep mock and production integrations clearly separate.
 - Unknown payload formats are converted by the AI reader (`src/lib/ai-normalize.server.ts`) only via a connector's `aiFallback` flag inside `ingestOrder`. Why: one pipeline, any platform format.
+- Menu dishes live in `public.menu_items` and are written only through `saveMenuItem`/`setMenuItemAvailable`/`deleteMenuItem`; the kitchen ticket (`printKOT`) never carries prices while the bill (`printOrderBill`) does. Why: money stays out of the kitchen, and menu edits stay server-authorised.
