@@ -4,7 +4,7 @@ export const AUTO_PRINT_KEY = "rf.autoprint";
 export const isAutoPrint = () => typeof window !== "undefined" && localStorage.getItem(AUTO_PRINT_KEY) === "1";
 export const setAutoPrint = (on: boolean) => localStorage.setItem(AUTO_PRINT_KEY, on ? "1" : "0");
 
-const PLATFORM: Record<string, string> = { zoop: "Zoop", railrestro: "RailRestro", railrecipe: "RailRecipe", yatrirestro: "YatriRestro", railyatri: "RailYatri", irctc: "IRCTC eCatering", irctc_ecatering: "IRCTC eCatering", poojapeda: "Pooja Peda", zomato: "Zomato", swiggy: "Swiggy", manual: "Manual / Counter", gmail_api: "Gmail" };
+const PLATFORM: Record<string, string> = { zoop: "Zoop", irctc_ecatering_: "IRCTC eCatering", railrestro: "RailRestro", railrecipe: "RailRecipe", yatrirestro: "YatriRestro", railyatri: "RailYatri", irctc: "IRCTC eCatering", irctc_ecatering: "IRCTC eCatering", poojapeda: "Pooja Peda", zomato: "Zomato", swiggy: "Swiggy", manual: "Manual / Counter", gmail_api: "Gmail" };
 export const platformName = (k?: string | null) => (k ? PLATFORM[k.toLowerCase()] ?? k.replace(/[_-]/g, " ").toUpperCase() : "Unknown / Other");
 
 /** Loads everything the bill needs (order, items, restaurant, source email) and prints it through a hidden frame. */

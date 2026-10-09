@@ -17,6 +17,8 @@
 - [ ] Not building: automated logins into merchant panels (platform terms, CAPTCHA/OTP)
 - [x] Sidebar regrouped (Inbox, status-wise orders, Needs Review with badges)
 - [x] Needs Review page; source status-update emails linked to existing orders
-- [ ] Dashboard upgrade per MIG MAYO reference — waiting for screenshots
+- [x] Orders table in MIG MAYO style (expand row, items, amount to collect, print, pagination)
+- [x] Delivery Executives table with daily COD stats
+- [ ] Dashboard summary restyle per reference
 - [ ] KOT print/reprint + timers, Delivery exec COD table
 - [ ] COD ledger, reconciliation, item reports, menu management
