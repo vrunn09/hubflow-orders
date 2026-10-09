@@ -29,6 +29,13 @@
       "when": 1791563558697,
       "tag": "0003_imported_emails_status_update",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791564185955,
+      "tag": "0004_create_menu_items",
+      "breakpoints": true
     }
   ]
 }
