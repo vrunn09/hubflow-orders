@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   BarChart3, Bell, Bike, ChefHat, ClipboardList, FileText, HelpCircle, LayoutDashboard, LogOut, Menu, Plug,
-  Receipt, Settings, Shield, Truck, User, Users, Wallet, Inbox, AlertTriangle, Activity, CheckCircle2, PackageCheck, XCircle, Ban,
+  Receipt, Settings, Shield, Truck, User, Users, Wallet, Inbox, AlertTriangle, Activity, CheckCircle2, PackageCheck, XCircle, Ban, UtensilsCrossed, Package,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { claimInvites, retryFailedJobs } from "@/lib/api.functions";
@@ -38,6 +38,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/orders", label: "Live Order Inbox", icon: Inbox, roles: MGR, status: "NEW", badge: "new" },
     { to: "/needs-review", label: "Needs Review", icon: AlertTriangle, roles: MGR, badge: "review" },
     { to: "/kitchen", label: "Kitchen / KOT", icon: ChefHat, roles: ["owner", "manager", "kitchen"] },
+    { to: "/menu", label: "Menu", icon: UtensilsCrossed, roles: ["owner", "manager", "kitchen"] },
   ] },
   { group: "Orders", items: [
     { to: "/orders", label: "All Orders", icon: ClipboardList, roles: MGR, status: "" },
@@ -56,6 +57,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
     { to: "/settlements", label: "Reconciliation", icon: Receipt, roles: MGR },
     { to: "/analytics", label: "Daily Business", icon: BarChart3, roles: MGR },
     { to: "/reports", label: "Reports", icon: FileText, roles: MGR },
+    { to: "/item-reports", label: "Item Reports", icon: Package, roles: MGR },
   ] },
   { group: "Workspace", items: [
     { to: "/order-sources", label: "Platform Connections", icon: Plug, roles: MGR },

@@ -119,9 +119,12 @@ function Dashboard() {
 
 export function Panel({ title, children, className, actions }: { title: string; children: React.ReactNode; className?: string; actions?: React.ReactNode }) {
   return (
-    <section className={`surface p-4 ${className ?? ""}`}>
-      <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold">{title}</h2>{actions}</div>
-      {children}
+    <section className={`overflow-hidden rounded-lg border bg-card ${className ?? ""}`}>
+      <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-2">
+        <h2 className="text-[11px] font-bold uppercase tracking-wider text-background">{title}</h2>
+        {actions}
+      </div>
+      <div className="p-4">{children}</div>
     </section>
   );
 }

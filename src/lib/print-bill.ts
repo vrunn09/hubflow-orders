@@ -4,6 +4,68 @@ export const AUTO_PRINT_KEY = "rf.autoprint";
 export const isAutoPrint = () => typeof window !== "undefined" && localStorage.getItem(AUTO_PRINT_KEY) === "1";
 export const setAutoPrint = (on: boolean) => localStorage.setItem(AUTO_PRINT_KEY, on ? "1" : "0");
 
+/** Kitchen printer preference — KOT tickets are printed on accept (no money shown). */
+export const KOT_AUTO_PRINT_KEY = "rf.kot.autoprint";
+export const isKotAutoPrint = () => typeof window !== "undefined" && localStorage.getItem(KOT_AUTO_PRINT_KEY) === "1";
+export const setKotAutoPrint = (on: boolean) => localStorage.setItem(KOT_AUTO_PRINT_KEY, on ? "1" : "0");
+
+/** Sends markup to a hidden frame and opens the printer directly, no browser dialog. */
+function printHtml(html: string, keepFor = 60_000) {
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
+  document.body.appendChild(f);
+  const d = f.contentWindow!.document;
+  d.open(); d.write(html); d.close();
+  setTimeout(() => { f.contentWindow!.focus(); f.contentWindow!.print(); setTimeout(() => f.remove(), keepFor); }, 300);
+}
+
+/**
+ * Kitchen Order Ticket: what to cook and where it goes. Deliberately carries no
+ * prices, totals or payment info — the kitchen screen never shows money.
+ */
+export async function printKOT(orderId: string, reprint = false) {
+  const { data: o, error } = await supabase.from("orders").select("*, order_items(*)").eq("id", orderId).maybeSingle();
+  if (error || !o) throw new Error(error?.message ?? "Order not found");
+  const { data: r } = await supabase.from("restaurants").select("name, phone, address").eq("id", o.restaurant_id).maybeSingle();
+  const esc = (v: unknown) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  const dt = (s?: string | null) => (s ? new Date(s).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "");
+  const qty = o.order_items.reduce((a: number, i: { quantity: number }) => a + i.quantity, 0);
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>KOT ${esc(o.order_number)}</title><style>
+  body{font-family:ui-monospace,monospace;width:72mm;margin:0 auto;padding:3mm;font-size:12px;color:#000}
+  h1{font-size:15px;text-align:center;margin:0}.c{text-align:center}.s{font-size:10px}hr{border:0;border-top:1px dashed #000;margin:5px 0}
+  table{width:100%;border-collapse:collapse}td{padding:1px 0;vertical-align:top}.r{text-align:right}
+  .kot{border:2px solid #000;text-align:center;font-weight:bold;padding:4px;margin:4px 0;font-size:16px;letter-spacing:1px}
+  .src{border:1px solid #000;text-align:center;font-weight:bold;padding:3px;margin:4px 0;font-size:12px}
+  .itm{font-size:15px;font-weight:bold;border-top:1px solid #000;padding:3px 0}
+  .qty{font-size:18px;font-weight:bold}
+  @page{size:80mm auto;margin:0}</style></head><body>
+  <h1>${esc(r?.name ?? "Restaurant")}</h1>
+  <div class="c s">${esc(r?.address)}${r?.phone ? "<br>Ph: " + esc(r.phone) : ""}</div>
+  <div class="kot">${reprint ? "REPRINT — " : ""}KITCHEN ORDER TICKET</div>
+  <div class="src">${esc(platformName(o.source_platform ?? o.source_key))}${o.external_order_id ? " · #" + esc(o.external_order_id) : ""}</div>
+  <table>
+    <tr><td><b>Order</b></td><td class="r"><b>${esc(o.order_number)}</b></td></tr>
+    <tr><td>Received</td><td class="r">${esc(dt(o.created_at))}</td></tr>
+    ${o.deliver_by ? `<tr><td><b>Deliver by</b></td><td class="r"><b>${esc(dt(o.deliver_by))}</b></td></tr>` : ""}
+    <tr><td>Ticket</td><td class="r">${esc(o.priority === "normal" ? "Normal" : o.priority)}</td></tr>
+  </table>
+  ${o.train_number || o.delivery_station ? `<hr><table>
+    ${o.train_number ? `<tr><td>Train</td><td class="r"><b>${esc(o.train_number)} ${esc(o.train_name ?? "")}</b></td></tr>` : ""}
+    ${o.journey_date ? `<tr><td>Journey date</td><td class="r">${esc(o.journey_date)}</td></tr>` : ""}
+    ${o.delivery_station ? `<tr><td>Station</td><td class="r"><b>${esc(o.delivery_station)}</b></td></tr>` : ""}
+    ${o.coach ? `<tr><td>Coach</td><td class="r"><b>${esc(o.coach)}</b></td></tr>` : ""}
+    ${o.seat ? `<tr><td>Seat / Berth</td><td class="r"><b>${esc(o.seat)}</b></td></tr>` : ""}
+  </table>` : ""}
+  <hr>
+  ${o.order_items.map((i: { name: string; quantity: number; notes: string | null }) => `<div class="itm"><span class="qty">${i.quantity}×</span> ${esc(i.name)}${i.notes ? `<div class="s">Note: ${esc(i.notes)}</div>` : ""}</div>`).join("")}
+  <hr>
+  <div class="c">Items: ${o.order_items.length} · Total qty: ${qty}</div>
+  ${o.instructions ? `<div class="s"><b>Instruction:</b> ${esc(o.instructions)}</div>` : ""}
+  <div class="c s">${reprint ? "Reprinted" : "Printed"} ${esc(dt(new Date().toISOString()))}</div>
+  </body></html>`;
+  printHtml(html);
+}
+
 const PLATFORM: Record<string, string> = { zoop: "Zoop", irctc_ecatering_: "IRCTC eCatering", railrestro: "RailRestro", railrecipe: "RailRecipe", yatrirestro: "YatriRestro", railyatri: "RailYatri", irctc: "IRCTC eCatering", irctc_ecatering: "IRCTC eCatering", poojapeda: "Pooja Peda", zomato: "Zomato", swiggy: "Swiggy", manual: "Manual / Counter", gmail_api: "Gmail" };
 export const platformName = (k?: string | null) => (k ? PLATFORM[k.toLowerCase()] ?? k.replace(/[_-]/g, " ").toUpperCase() : "Unknown / Other");
 
@@ -44,10 +106,5 @@ export async function printOrderBill(orderId: string) {
   ${mail ? `<hr><div class="s">Received via email from ${esc(mail.sender)}<br>${esc(mail.subject)}<br>${esc(dt(mail.received_at))}</div>` : ""}
   <hr><div class="c">Thank you! Happy journey</div><div class="c s">Printed ${esc(dt(new Date().toISOString()))} · RailFeasto Order Hub</div>
   </body></html>`;
-  const f = document.createElement("iframe");
-  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
-  document.body.appendChild(f);
-  const d = f.contentWindow!.document;
-  d.open(); d.write(html); d.close();
-  setTimeout(() => { f.contentWindow!.focus(); f.contentWindow!.print(); setTimeout(() => f.remove(), 60_000); }, 300);
+  printHtml(html);
 }
