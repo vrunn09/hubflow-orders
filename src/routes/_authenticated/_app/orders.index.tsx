@@ -1,6 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { printOrderBill, platformName, isAutoPrint, setAutoPrint } from "@/lib/print-bill";
+import { Switch } from "@/components/ui/switch";
+import { ChevronDown, ChevronUp, Eye, Plus, Printer, Search } from "lucide-react";
 import { z } from "zod";
 import { useTenant } from "@/lib/tenant";
 import { useOrdersSince } from "@/lib/queries";
@@ -8,7 +13,7 @@ import { formatINR } from "@/lib/order-status";
 import { CONNECTORS } from "@/lib/connectors/registry";
 import { RoleGuard } from "@/components/app/Guard";
 import { EmptyState, ErrorState, PageHeader, TableSkeleton } from "@/components/app/states";
-import { Pill, SourceTag } from "@/components/app/badges";
+import { Pill } from "@/components/app/badges";
 import { ManualOrderDialog } from "@/components/app/ManualOrderDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +41,7 @@ function Orders() {
 
   const rows = useMemo(() => (q.data ?? []).filter((o) => {
     if (status && !status.split(",").includes(o.status)) return false;
-    if (f.source && o.source_key !== f.source) return false;
+    if (f.source && o.source_key !== f.source && (o.source_platform ?? "").toLowerCase() !== f.source) return false;
     if (f.payment && o.payment_status !== f.payment) return false;
     if (f.station && o.delivery_station !== f.station) return false;
     if (f.train && !(o.train_number ?? "").includes(f.train)) return false;
@@ -49,6 +54,23 @@ function Orders() {
     }
     return true;
   }), [q.data, status, f, term]);
+  const [per, setPer] = useState(50);
+  const [page, setPage] = useState(0);
+  const pageRows = rows.slice(page * per, (page + 1) * per);
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const toggle = (id: string) => setOpen((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const [auto, setAuto] = useState(false);
+  useEffect(() => setAuto(isAutoPrint()), []);
+  const ids = pageRows.map((o) => o.id);
+  const items = useQuery({
+    queryKey: ["order-items", ids], enabled: ids.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("order_items").select("id, order_id, name, quantity, unit_price").in("order_id", ids);
+      const m: Record<string, NonNullable<typeof data>> = {};
+      for (const i of data ?? []) (m[i.order_id] ??= []).push(i);
+      return m;
+    },
+  });
   const stations = [...new Set((q.data ?? []).map((o) => o.delivery_station).filter(Boolean))] as string[];
   const counts = (s: string) => (q.data ?? []).filter((o) => !s || s.split(",").includes(o.status)).length;
 
@@ -81,30 +103,69 @@ function Orders() {
         <Input className="w-20" placeholder="Max ₹" type="number" value={f.max} onChange={(e) => setF({ ...f, max: e.target.value })} />
       </div>
 
+      <div className="mb-2 flex flex-wrap items-center gap-3 text-xs">
+        <label className="flex items-center gap-1.5"><Switch checked={days === 1} onCheckedChange={(v) => setDays(v ? 1 : 7)} />Today only</label>
+        <label className="flex items-center gap-1.5"><Switch checked={auto} onCheckedChange={(v) => { setAutoPrint(v); setAuto(v); }} />Auto-print new orders</label>
+        <span className="ml-auto text-muted-foreground">{rows.length} orders</span>
+      </div>
       {q.isLoading ? <TableSkeleton /> : q.error ? <ErrorState error={q.error} retry={() => q.refetch()} /> : !rows.length ? (
         <EmptyState title="No orders match" body="Try a different tab or filter, or create a manual order." />
       ) : (
-        <div className="surface overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <tr><th className="px-3 py-2">Order</th><th className="px-3 py-2">Source</th><th className="px-3 py-2">Customer</th><th className="hidden px-3 py-2 md:table-cell">Train / station</th><th className="px-3 py-2 text-right">Total</th><th className="hidden px-3 py-2 sm:table-cell">Payment</th><th className="px-3 py-2">Status</th><th className="hidden px-3 py-2 lg:table-cell">Placed</th></tr>
-            </thead>
-            <tbody className="divide-y">
-              {rows.map((o) => (
-                <tr key={o.id} className="hover:bg-muted/40">
-                  <td className="px-3 py-2.5"><Link to="/orders/$id" params={{ id: o.id }} className="font-mono text-xs font-semibold hover:text-saffron">{o.order_number}</Link><div className="max-w-28 truncate text-[11px] text-muted-foreground">{o.external_order_id}</div></td>
-                  <td className="px-3 py-2.5"><SourceTag k={o.source_key} /></td>
-                  <td className="px-3 py-2.5">{o.customer_name}</td>
-                  <td className="hidden px-3 py-2.5 text-muted-foreground md:table-cell">{o.train_number ? `${o.train_number} · ${o.coach ?? ""}/${o.seat ?? ""}` : "—"}<div className="text-xs">{o.delivery_station}</div></td>
-                  <td className="tabular px-3 py-2.5 text-right font-semibold">{formatINR(o.total)}</td>
-                  <td className="hidden px-3 py-2.5 sm:table-cell"><Pill value={o.payment_status} /> <span className="text-xs text-muted-foreground">{o.payment_method}</span></td>
-                  <td className="px-3 py-2.5"><Pill value={o.status} /></td>
-                  <td className="tabular hidden px-3 py-2.5 text-xs text-muted-foreground lg:table-cell">{new Date(o.created_at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="overflow-x-auto rounded-md border bg-card">
+            <table className="w-full min-w-[960px] text-xs">
+              <thead className="sticky top-0 bg-primary text-primary-foreground">
+                <tr>{["", "Status", "Order ID", "Vendor", "Delivery", "Payment", "Contact", "Train · Coach/Seat · Station", "Amount", "Actions"].map((h) => <th key={h} className="px-2 py-2 text-left font-semibold">{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {pageRows.map((o) => {
+                  const isOpen = open.has(o.id);
+                  const its = items.data?.[o.id] ?? [];
+                  const cod = /cod|cash/i.test(o.payment_method);
+                  return (
+                    <Fragment key={o.id}>
+                      <tr className="border-b hover:bg-muted/40">
+                        <td className="px-2 py-2"><button aria-label="Expand" onClick={() => toggle(o.id)} className="rounded-full bg-muted p-1">{isOpen ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}</button></td>
+                        <td className="px-2 py-2"><Pill value={o.status} /></td>
+                        <td className="px-2 py-2"><Link to="/orders/$id" params={{ id: o.id }} className="font-mono font-semibold hover:text-saffron">{o.external_order_id}</Link><div className="text-[10px] text-muted-foreground">{o.order_number}</div></td>
+                        <td className="px-2 py-2 font-semibold text-saffron">{platformName(o.source_platform ?? o.source_key)}</td>
+                        <td className="tabular px-2 py-2">{o.deliver_by ? new Date(o.deliver_by).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : <span className="text-muted-foreground">Not provided</span>}</td>
+                        <td className="px-2 py-2"><span className={cn("rounded px-2 py-0.5 text-[10px] font-bold", cod ? "bg-primary text-primary-foreground" : "bg-success text-success-foreground")}>{o.payment_method.toUpperCase()}</span></td>
+                        <td className="tabular px-2 py-2">{o.customer_phone ?? "—"}</td>
+                        <td className="px-2 py-2">{o.train_number ? <>{o.train_number} {o.train_name ?? ""} · <b className="text-destructive">{o.coach ?? "—"}/{o.seat ?? "—"}</b> · <span className="rounded border border-info px-1 text-info">{o.delivery_station ?? "—"}</span></> : "—"}</td>
+                        <td className="tabular px-2 py-2 text-right font-bold">{formatINR(o.total)}</td>
+                        <td className="px-2 py-2"><div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="size-7" aria-label="Print bill" onClick={() => printOrderBill(o.id).catch((e) => toast.error(e.message))}><Printer className="size-3.5" /></Button>
+                          <Button size="icon" variant="ghost" className="size-7" aria-label="Open" asChild><Link to="/orders/$id" params={{ id: o.id }}><Eye className="size-3.5" /></Link></Button>
+                        </div></td>
+                      </tr>
+                      {isOpen && (
+                        <tr className="border-b bg-muted/20"><td colSpan={10} className="p-3">
+                          <div className="grid gap-3 md:grid-cols-3">
+                            <table className="w-full rounded border bg-card"><thead className="bg-muted"><tr><th className="px-2 py-1 text-left">Item</th><th className="px-2 py-1 text-right">Qty</th><th className="px-2 py-1 text-right">Amount</th></tr></thead>
+                              <tbody>{its.length ? its.map((i) => <tr key={i.id}><td className="px-2 py-1">{i.name}</td><td className="px-2 py-1 text-right">{i.quantity}</td><td className="tabular px-2 py-1 text-right">{formatINR(Number(i.unit_price) * i.quantity)}</td></tr>) : <tr><td colSpan={3} className="px-2 py-1 text-muted-foreground">{items.isLoading ? "Loading…" : "Not provided"}</td></tr>}</tbody></table>
+                            <div className="rounded border bg-card p-2"><div className="mb-1 font-semibold">Remarks</div><div className="text-muted-foreground">{o.instructions || "—"}</div><div className="mt-2 text-muted-foreground">Customer: {o.customer_name}{o.journey_date ? ` · Journey ${o.journey_date}` : ""}</div></div>
+                            <div className="space-y-1 rounded border bg-card p-2">
+                              {[["Sub total", o.subtotal], ["Tax / GST", o.tax], ["Delivery charge", o.delivery_fee], ["Discount", o.discount]].map(([l, v]) => <div key={l as string} className="flex justify-between"><span className="text-muted-foreground">{l}</span><span className="tabular">{formatINR(v as number)}</span></div>)}
+                              <div className="flex justify-between rounded bg-primary px-2 py-1.5 text-sm font-bold text-primary-foreground"><span>{cod && o.payment_status !== "PAID" ? "Amount to collect" : "Total (paid online)"}</span><span className="tabular">{formatINR(o.total)}</span></div>
+                            </div>
+                          </div>
+                        </td></tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-2 flex items-center justify-end gap-2 text-xs">
+            <span>Rows per page</span>
+            <select className={sel} value={per} onChange={(e) => { setPer(+e.target.value); setPage(0); }}>{[25, 50, 100].map((n) => <option key={n}>{n}</option>)}</select>
+            <span>{page * per + 1}–{Math.min(rows.length, (page + 1) * per)} of {rows.length}</span>
+            <Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</Button>
+            <Button size="sm" variant="outline" disabled={(page + 1) * per >= rows.length} onClick={() => setPage(page + 1)}>Next</Button>
+          </div>
+        </>
       )}
     </div>
   );

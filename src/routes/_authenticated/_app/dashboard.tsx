@@ -8,9 +8,9 @@ import { dailySeries, groupSum, useOrdersSince, useSources } from "@/lib/queries
 import { formatINR } from "@/lib/order-status";
 import { RoleGuard } from "@/components/app/Guard";
 import { CardsSkeleton, EmptyState, ErrorState, PageHeader, StatCard } from "@/components/app/states";
-import { EnvTag, Pill, SourceTag } from "@/components/app/badges";
+import { EnvTag, Pill } from "@/components/app/badges";
 import { Button } from "@/components/ui/button";
-import { CONNECTORS } from "@/lib/connectors/registry";
+import { platformName } from "@/lib/print-bill";
 
 export const Route = createFileRoute("/_authenticated/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — RailFeasto Order Hub" }, { name: "description", content: "Live overview of today's orders." }, { property: "og:title", content: "Dashboard" }, { property: "og:description", content: "Live overview of today's orders." }] }),
@@ -18,7 +18,6 @@ export const Route = createFileRoute("/_authenticated/_app/dashboard")({
 });
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
-const srcName = (k: string) => CONNECTORS.find((c) => c.key === k)?.name.split(" (")[0]?.split(" /")[0] ?? k;
 
 function Dashboard() {
   const { restaurantId } = useTenant();
@@ -38,8 +37,8 @@ function Dashboard() {
   const sales = valid.reduce((s, r) => s + Number(r.total), 0);
   const pending = rows.filter((r) => r.payment_status === "PENDING" && !["CANCELLED", "FAILED"].includes(r.status)).reduce((s, r) => s + Number(r.total), 0);
   const series = dailySeries(rows, 7);
-  const platOrders = groupSum(rows, (r) => srcName(r.source_key));
-  const platRevenue = groupSum(rows.filter((r) => !["CANCELLED", "FAILED", "REFUNDED"].includes(r.status)), (r) => srcName(r.source_key), (r) => Number(r.total));
+  const platOrders = groupSum(rows, (r) => platformName(r.source_platform ?? r.source_key));
+  const platRevenue = groupSum(rows.filter((r) => !["CANCELLED", "FAILED", "REFUNDED"].includes(r.status)), (r) => platformName(r.source_platform ?? r.source_key), (r) => Number(r.total));
 
   return (
     <div>
@@ -86,7 +85,7 @@ function Dashboard() {
                 <li key={o.id} className="row-flash">
                   <Link to="/orders/$id" params={{ id: o.id }} className="flex items-center gap-3 py-2.5 text-sm hover:bg-muted/50">
                     <span className="w-20 font-mono text-xs">{o.order_number}</span>
-                    <SourceTag k={o.source_key} />
+                    <span className="text-[11px] font-semibold text-saffron">{platformName(o.source_platform ?? o.source_key)}</span>
                     <span className="min-w-0 flex-1 truncate">{o.customer_name}{o.train_number && <span className="text-muted-foreground"> · {o.train_number} · {o.delivery_station}</span>}</span>
                     <span className="tabular hidden font-semibold sm:inline">{formatINR(o.total)}</span>
                     <Pill value={o.status} />
