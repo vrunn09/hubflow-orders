@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Download } from "lucide-react";
-import { supabase } from "@/integrationts/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/lib/tenant";
 import { formatINR } from "@/lib/order-status";
 import { downloadCsv } from "@/lib/queries";
