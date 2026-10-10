@@ -201,7 +201,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
     if (!src) throw new Error("Manual source missing");
     const { ingestOrder } = await import("./ingest.server");
     const r = await ingestOrder(a, { restaurantId: data.restaurantId, sourceId: src.id, connectorKey: "manual", raw: data.order, actorId: context.userId });
-    if (r.status === "failed") throw new Error(r.error ?? "Could not create order");
+    if (r.status === "failed" || r.status === "needs_review" || r.status === "ignored") throw new Error(r.error ?? "Could not create order");
     if (r.status === "duplicate") throw new Error("An order with this reference already exists");
     return r;
   });
