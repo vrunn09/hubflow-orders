@@ -331,10 +331,15 @@ export type Database = {
         Row: {
           attempts: number
           created_at: string
+          dedupe_key: string | null
+          error_code: string | null
           id: string
           kind: string
+          last_attempt_at: string | null
           last_error: string | null
+          max_attempts: number
           next_attempt_at: string
+          order_id: string | null
           payload: Json
           restaurant_id: string
           source_id: string | null
@@ -344,10 +349,15 @@ export type Database = {
         Insert: {
           attempts?: number
           created_at?: string
+          dedupe_key?: string | null
+          error_code?: string | null
           id?: string
           kind?: string
+          last_attempt_at?: string | null
           last_error?: string | null
+          max_attempts?: number
           next_attempt_at?: string
+          order_id?: string | null
           payload: Json
           restaurant_id: string
           source_id?: string | null
@@ -357,10 +367,15 @@ export type Database = {
         Update: {
           attempts?: number
           created_at?: string
+          dedupe_key?: string | null
+          error_code?: string | null
           id?: string
           kind?: string
+          last_attempt_at?: string | null
           last_error?: string | null
+          max_attempts?: number
           next_attempt_at?: string
+          order_id?: string | null
           payload?: Json
           restaurant_id?: string
           source_id?: string | null
@@ -462,9 +477,12 @@ export type Database = {
           body: string | null
           category: string
           created_at: string
+          group_key: string | null
           id: string
           link: string | null
+          occurrences: number
           read: boolean
+          resolved_at: string | null
           restaurant_id: string | null
           title: string
         }
@@ -472,9 +490,12 @@ export type Database = {
           body?: string | null
           category: string
           created_at?: string
+          group_key?: string | null
           id?: string
           link?: string | null
+          occurrences?: number
           read?: boolean
+          resolved_at?: string | null
           restaurant_id?: string | null
           title: string
         }
@@ -482,9 +503,12 @@ export type Database = {
           body?: string | null
           category?: string
           created_at?: string
+          group_key?: string | null
           id?: string
           link?: string | null
+          occurrences?: number
           read?: boolean
+          resolved_at?: string | null
           restaurant_id?: string | null
           title?: string
         }
@@ -1068,6 +1092,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_ingested_order: {
+        Args: {
+          _actor: string
+          _items: Json
+          _o: Json
+          _raw: Json
+          _rid: string
+          _source_id: string
+          _source_key: string
+        }
+        Returns: Json
+      }
       create_restaurant: {
         Args: {
           _address: string

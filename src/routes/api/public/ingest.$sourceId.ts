@@ -33,7 +33,8 @@ export const Route = createFileRoute("/api/public/ingest/$sourceId")({
         const result = await ingestOrder(supabaseAdmin, { restaurantId: src.restaurant_id, sourceId: src.id, connectorKey: src.connector_key, raw });
         await supabaseAdmin.from("order_sources").update({ last_sync_at: new Date().toISOString() }).eq("id", src.id);
         await retryDueJobs(supabaseAdmin, src.restaurant_id).catch(() => {});
-        if (result.status === "failed") return json({ status: "queued_for_retry", error: "Validation failed" }, 422);
+        if (result.status === "failed") return json({ status: "queued_for_retry", code: result.errorCode, error: result.error }, 503);
+        if (result.status === "needs_review") return json({ status: "needs_review", code: result.errorCode, error: result.error }, 422);
         return json(result, result.status === "created" ? 201 : 200);
       },
     },

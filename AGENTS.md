@@ -11,7 +11,7 @@
 
 ## Architecture rules
 - Every order source is a connector in `src/lib/connectors/registry.ts` that normalizes into `unifiedOrderSchema`; never special-case a platform in the order pipeline. Why: new platforms must plug in without touching the hub.
-- All order ingestion goes through `ingestOrder` in `src/lib/ingest.server.ts`, which persists an `ingestion_jobs` row first. Why: failed payloads are retried, never silently lost.
+- All order ingestion goes through `ingestOrder` in `src/lib/ingest.server.ts`: one `ingestion_jobs` row per message (unique `dedupe_key`), retries reuse that row with exponential backoff up to `max_attempts` then `dead_letter`, permanent errors go to `needs_review`, orders are saved via the transactional `create_ingested_order` RPC, and alerts are grouped per source+error code. Why: failures are never lost, never duplicated, and never flood notifications.
 - Writes (status changes, payments, refunds, sources, staff) go through server functions in `src/lib/api.functions.ts` that check `has_any_role` before using the admin client. Why: server-side authorization; the browser only reads under RLS.
 - Every tenant table carries `restaurant_id` and RLS uses `is_member`/`has_any_role`. Why: restaurant-level data isolation.
 - Payment status changes only server-side (`verifyPayment`, `refundOrder`); `payments` has no client write grants. Why: never trust frontend payment state.

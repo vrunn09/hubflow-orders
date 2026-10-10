@@ -151,8 +151,7 @@ export async function syncGmailForRestaurant(admin: Admin, restaurantId: string)
         restaurantId, sourceId: acct.source_id!, connectorKey: "gmail_api",
         raw: { messageId: id, threadId: msg.threadId, from: sender, subject, platform, body },
       });
-      const status = out.status === "created" ? "imported" : out.status === "duplicate" ? "duplicate" : "needs_review";
-      if (out.orderId && out.status === "created") await admin.from("orders").update({ source_platform: platform }).eq("id", out.orderId);
+      const status = out.status === "created" ? "imported" : out.status === "duplicate" ? "duplicate" : out.status === "ignored" ? "status_update" : out.status === "failed" ? "failed" : "needs_review";
       await admin.from("imported_emails").update({ processing_status: status, order_id: out.orderId ?? null, error_message: out.error?.slice(0, 300) ?? null })
         .eq("restaurant_id", restaurantId).eq("gmail_message_id", id);
       if (status === "imported") r.imported++; else if (status === "duplicate") r.duplicates++; else r.needsReview++;
