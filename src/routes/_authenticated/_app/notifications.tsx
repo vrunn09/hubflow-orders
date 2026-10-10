@@ -128,7 +128,7 @@ function Notifications() {
     for (const n of q.data ?? []) {
       const k = n.group_key ?? `${n.category}|${n.title}|${n.body ?? ""}`;
       const i = idx.get(k);
-      if (i !== undefined) { out[i].count += n.occurrences ?? 1; continue; }
+      if (i !== undefined) { out[i]!.count += n.occurrences ?? 1; continue; }
       idx.set(k, out.length); out.push({ ...n, count: n.occurrences ?? 1 });
     }
     return out;
