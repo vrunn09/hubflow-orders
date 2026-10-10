@@ -8,10 +8,10 @@ type Admin = SupabaseClient<Database>;
 export interface IngestResult {
   /** created = new order; duplicate = already exists; ignored = not a new order; needs_review = permanent problem; failed = will retry */
   status: "created" | "duplicate" | "ignored" | "needs_review" | "failed";
-  orderId?: string;
+  orderId?: string | undefined;
   error?: string;
   errorCode?: IngestErrorCode;
-  jobId?: string;
+  jobId?: string | undefined;
 }
 
 function logIngest(level: "info" | "error", event: string, f: Record<string, unknown>) {
@@ -36,7 +36,7 @@ async function resolveAlerts(admin: Admin, restaurantId: string, sourceId: strin
   const { data: openAlerts } = await admin.from("notifications").select("id, group_key").eq("restaurant_id", restaurantId)
     .like("group_key", `ingest:${sourceId}:%`).is("resolved_at", null);
   for (const n of openAlerts ?? []) {
-    const code = n.group_key!.split(":")[2];
+    const code = n.group_key?.split(":")[2] ?? "";
     const { count } = await admin.from("ingestion_jobs").select("id", { count: "exact", head: true })
       .eq("source_id", sourceId).eq("error_code", code).in("status", ["failed", "needs_review", "dead_letter", "processing"]);
     if (!count) await admin.from("notifications").update({ resolved_at: new Date().toISOString(), read: true }).eq("id", n.id);
