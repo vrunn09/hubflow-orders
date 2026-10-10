@@ -170,13 +170,10 @@ export const syncSource = createServerFn({ method: "POST" })
         }
       }
       // Production push connectors: sync = retry any failed jobs for this source.
-      const { data: failed } = await a.from("ingestion_jobs").select("*").eq("source_id", src.id).eq("status", "failed").lt("attempts", 5).limit(20);
-      for (const job of failed ?? []) {
-        const r = await ingestOrder(a, { restaurantId: src.restaurant_id, sourceId: src.id, connectorKey: src.connector_key, raw: job.payload });
-        await a.from("ingestion_jobs").update({ status: r.status === "failed" ? "failed" : "done", attempts: job.attempts + 1 }).eq("id", job.id);
-        results.push(r);
-      }
-      const failures = results.filter((r) => r.status === "failed").length;
+      const { retryDueJobs } = await import("./ingest.server");
+      const retried = await retryDueJobs(a, src.restaurant_id, src.id);
+      if (retried.checked > retried.recovered) results.push({ status: "failed" as const });
+      const failures = results.filter((r) => r.status === "failed" || r.status === "needs_review").length;
       await a.from("order_sources").update({
         status: "connected", last_sync_at: new Date().toISOString(), health: failures ? "degraded" : "healthy",
         last_error: failures ? `${failures} payload(s) failed validation` : null,
@@ -475,4 +472,36 @@ export const retryFailedJobs = createServerFn({ method: "POST" })
     const a = await admin();
     const { retryDueJobs } = await import("./ingest.server");
     return retryDueJobs(a, data.restaurantId);
+  });
+
+/* ---------------- Import problems: retry / dismiss one job ---------------- */
+async function loadJob(id: string) {
+  const a = await admin();
+  const { data } = await a.from("ingestion_jobs").select("id, restaurant_id, status").eq("id", id).single();
+  if (!data) throw new Error("Import not found");
+  return data;
+}
+export const retryIngestionJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ jobId: uuid }).parse(d))
+  .handler(async ({ data, context }) => {
+    const job = await loadJob(data.jobId);
+    await requireRole(context, job.restaurant_id, ["owner", "manager"]);
+    if (["done", "duplicate", "superseded", "processing"].includes(job.status)) throw new Error(`Cannot retry an import that is ${job.status}`);
+    const { retryJob } = await import("./ingest.server");
+    const r = await retryJob(await admin(), job.id);
+    await audit(job.restaurant_id, context.userId, "ingestion.retry", "ingestion_job", job.id, { result: r.status, code: r.errorCode ?? null });
+    return { status: r.status, error: r.error ?? null, errorCode: r.errorCode ?? null, orderId: r.orderId ?? null };
+  });
+export const dismissIngestionJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ jobId: uuid }).parse(d))
+  .handler(async ({ data, context }) => {
+    const job = await loadJob(data.jobId);
+    await requireRole(context, job.restaurant_id, ["owner", "manager"]);
+    if (!["failed", "needs_review", "dead_letter"].includes(job.status)) throw new Error(`Cannot dismiss an import that is ${job.status}`);
+    const a = await admin();
+    await a.from("ingestion_jobs").update({ status: "dismissed", updated_at: new Date().toISOString() }).eq("id", job.id);
+    await audit(job.restaurant_id, context.userId, "ingestion.dismiss", "ingestion_job", job.id);
+    return { ok: true };
   });
